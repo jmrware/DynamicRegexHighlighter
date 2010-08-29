@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Dynamic Regex Highlighting with Javascript! &copy; 2010 Jeff Roberson</title>
+<meta name="author" content="Jeff Roberson" />
+<meta name="version" content="20100829" />
+<meta name="licence" content="MIT" />
+<script type="text/javascript" src="DynamicRegexHighlighter.js"></script>
+<style type="text/css" media="screen">
+    body {margin: 2em; color:#333; background:#DDB;}
+    div {margin: 0; padding: 0em 1.5em 1em; border: 2px solid #555; background:#EEC;}
+    pre {margin: 1em 0; padding: 1em; border: 2px solid #555; font-size: 1.2em;}
+    h1, h2 {font-family: monospace;}
+    .regex_hl {color: #333; background-color: #0F0;}
+</style>
+</head>
+<body>
+<div>
+<h1 class="regex" id="head">Dynamic (?:Regex Highlighting)++ with Javascript!</h1>
+<p>Interactive tester: <a href="DynamicRegexHighlighterTester.html">DynamicRegexHighlighterTester.html</a></p>
+<p>This page demonstrates, documents and tests the Javascript dynamic regex highlighter script: <tt><a href="DynamicRegexHighlighter.js.txt">DynamicRegexHighlighter.js</a></tt>. Each regular expressions from the script is presented below in two formats: 1.) fully commented in free-spacing format, and 2.) uncommented in native Javascript format. Additionally, an extended example pseudo regex is provided which tests the various PCRE regex constructs that this script recognizes. During the page load process, (which can take quite some time if there are many highly complex regexes on the page), progress information is displayed in the browser's status bar at the bottom of the page (if the browser is setup to allow this.) Once the page is loaded, the script is idle except for <tt>mouseover</tt> and <tt>mouseout</tt> events, which are handled very quickly. When the page is unloaded, the script once again comes back to life to free up the memory it allocated and to null out all its references to DOM node objects (to prevent nefarious memory leaks that happen in IE if you don't).</p>
+
+<p>To see the highlighting in action, place the mouse cursor over the various parts of the regular expressions below. The components which are highlighted include: matching character class delimiters (and any quantifiers), comments, comment groups and matching (possibly nested) group delimiters (and their quantifiers). When moused over, these regex components are highlighted in <span class="regex_hl">green</span> (or more precisely, in whatever style is defined by the CSS class selector: "<tt>.regex_hl</tt>"). Additionally, when the mouse is placed over a numbered capturing group, a tooltip appears indicating the capture group number (e.g. "Capture group $3"). Note, however, that if the regex has a "branch reset" construct, <tt class="regex">(?|(like)|(this)|(one))</tt>, then the script is not smart enough to compute capture groups numbers beyond that point. In this case, affected capture group numbers are simply not included in the tooltips.</p>
+
+<h2 class="regex">Usage: (easy as one two three!)</h2>
+<ol>
+    <li>Add a script tag to the document head element to include: <tt>DynamicRegexHighlighter.js</tt>.<br />e.g. <tt style="color: #080;">&lt;script type="text/javascript" src="DynamicRegexHighlighter.js"&gt;&lt;/script&gt;</tt></li>
+    <li>Add a <tt>.regex_hl</tt> class selector to the stylesheet to define what the highlighted regex text should look like.<br />e.g. <tt style="color: #080;">&lt;style type="text/css"&gt;.regex_hl {color: #333; background-color: #0F0;}&lt;/style&gt;</tt></li>
+    <li>The regular expression should be valid and in native regex format and should have all "<tt>&lt;</tt>", "<tt>&gt;</tt>" and "<tt>&amp;</tt>" characters converted to HTML entities, so that the web page is valid. Wrap the regex to be highlighted in an element having <tt>class="regex"</tt>. If the regex is written in free-spacing mode with <tt>#comments</tt> and defined whitespace indentation (i.e. with Perl syntax "x" modifier set), add "<tt>re_x</tt>" to the class, and wrap it in a <tt>PRE</tt> tag (to preserve whitespace for IE).<br />e.g. <tt class="regex" style="color: #080;">&lt;h1 class="regex"&gt;Dynamic (?:Regex Highlighting)++ with Javascript!&lt;/h1"&gt;</tt><br />e.g. <tt style="color: #080;">&lt;pre class="regex re_x"&gt;<span class="regex re_x">Regex with #comments here.</span>&lt;/pre"&gt;</tt></li>
+</ol>
+
+<p>Following are all the regexes from the <tt><a href="DynamicRegexHighlighter.js.txt">DynamicRegexHighlighter.js</a></tt> script. First up is the Phase 1 regex used to parse regexes having commenting turned on (i.e. regexes with the Perl style "x" modifier set). The first listing is this regex in verbose format with a liberal sprinkling of comments and indentation for clarity.</p>
+<!-- adding class="re_x" sets free-spacing regex mode where "# comments" are properly handled -->
+<pre class="regex re_x" id="n1"># re_1_cmt: Match regex character classes, comments and comment groups.
+  (\[\^?)                                 # $1: Character class opening delim.
+  (                                       # $2: Character class contents.
+    \]?                                   # Unescaped ] allowed if first char.
+    [^\][\\]*(?:\\[\S\s][^\][\\]*)*       # Non-[], escaped-anything (normal*).
+    (?: \[                                # Allow a non-escaped "[", and it
+      (?::\^?\w+:\])?                     # may be embedded POSIX char class.
+      [^\][\\]*(?:\\[\S\s][^\][\\]*)*     # More non-[], escaped-anything.
+    )*                                    # Unroll-the-loop (special normal*)*
+  )                                       # End $2. Character class contents.
+  \]                                      # Character class closing delimiter.
+  ((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)  # $3: Optional cc quantifier.
+| (\(\?\#[^)]*\))                         # $4: Comment group (cmt_grp).
+| (\((?!\?\#))                            # $5: Opening "(" (non comment group).
+| (\#.*)                                  # $6: Comment (cmt).
+| ([^[(#\\]*(?:\\[\S\s][^[(#\\]*)*)       # $7: Everything else.
+</pre>
+
+<p>Following is the exact same regex in its raw, uncommented native Javascript format as it appears in the script (with a few added newlines to avoid it going off screen).</p>
+<!-- adding class="regex" to any element will cause it to be processed as a regular expression -->
+<pre class="regex">var re_1_cmt = /(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?
+[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|
+(\(\?#[^)]*\))|(\((?!\?#))|(#.*)|([^[(#\\]*(?:\\[\S\s][^[(#\\]*)*)/g;</pre>
+
+<p>Following, are the remaining regular expressions from the script in both commented and non-commented formats. Happy regexing!</p>
+
+<pre class="regex re_x"># re_1_nocmt: Match regex character classes and comment groups (no comments).
+  (\[\^?)                                 # $1: Character class opening delim.
+  (                                       # $2: Character class contents.
+    \]?                                   # Unescaped ] allowed if first char.
+    [^\][\\]*(?:\\[\S\s][^\][\\]*)*       # Non-[], escaped-anything (normal*).
+    (?: \[                                # Allow a non-escaped "[", and it
+      (?::\^?\w+:\])?                     # may be embedded POSIX char class.
+      [^\][\\]*(?:\\[\S\s][^\][\\]*)*     # More non-[], escaped-anything.
+    )*                                    # Unroll-the-loop (special normal*)*
+  )                                       # End $2. Character class contents.
+  \]                                      # Character class closing delimiter.
+  ((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)  # $3: Optional cc quantifier.
+| (\(\?\#[^)]*\))                         # $4: Comment group (cmt_grp).
+| (\((?!\?\#))                            # $5: Opening "(" (non comment group).
+| ([^[(\\]*(?:\\[\S\s][^[(\\]*)*)         # $6: Everything else.
+</pre>
+
+<pre class="regex">var re_1_nocmt = /(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?
+[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|
+(\(\?#[^)]*\))|(\((?!\?#))|([^[(\\]*(?:\\[\S\s][^[(\\]*)*)/g;</pre>
+
+<pre class="regex re_x"># re_2: Match inner (non-nested) PCRE syntax regex groups.
+\(                         # Regex group opening "(" delimiter.
+(                          # $1: Optional group type specification.
+  \?                       # All special group types start with a "?".
+  (?:                      # Non-capture group for group types alternatives.
+    [:|&gt;=!]                # Types specified with a single character.
+  | &amp;gt;                   # Atomic group (HTML entity).
+  | &amp;lt;[=!]               # Look behind (HTML entity).
+  | &lt;[=!]                  # Look behind (Note 1).
+  | P?&amp;lt;\w+&amp;gt;          # Named capture group (Python/Perl) (HTML entity).
+  | P?&lt;\w+&gt;                # Named capture group (Python/Perl) (Note 1).
+  | '\w+'                  # Named capturing group (Perl).
+  | (?=&lt;span[^&gt;]*&gt;&amp;\#40;)  # Previously-marked nested generic conditional.
+  | \(                     # Begin conditional group with "(" delimiter.
+    (?:                    # Non-capture group for conditional alternatives.
+      [+\-]?\d+            # Absolute/+-relative reference condition.
+    | &amp;lt;\w+&amp;gt;          # Named reference condition (Perl) (HTML entity).
+    | &lt;\w+&gt;                # Named reference condition (Perl) (Note 1).
+    | '\w+'                # Named reference condition (Perl).
+    | \w+                  # Named reference condition (PCRE)
+    | R&amp;amp;\w+            # specific recursion condition (HTML entity).
+    | R&amp;\w+                # specific recursion condition (Note 1).
+    ) \)                   # End conditional group with ")" delimiter.
+  | (?:                    # Group types that must have zero content.
+      R                    # Recurse whole pattern.
+    | (?:-?[iJmsUx])+      # Flag modifiers (PCRE).
+    | [+\-]?\d+            # Call subpattern by absolute/+-relative number.
+    | &amp;amp;\w+             # Call subpattern by name (Perl) (HTML entity).
+    | &amp;\w+                 # Call subpattern by name (Perl) (Note 1).
+    | P&amp;gt;\w+             # Call subpattern by name (Python) (HTML entity).
+    | P&gt;\w+                # Call subpattern by name (Python) (Note 1).
+    | P=\w+                # Reference by name (Python).
+    )(?=\))                # Ensure this group type has no contents.
+  )                        # End non-capture group of group types alternatives.
+)?                         # End $1: Optional group type specification.
+([^()]*)                   # $2: Inner group contents.
+\)                         # Regex group closing ")" delimiter.
+((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)  # $3: Optional quantifier.
+# Note 1: Handle "&lt;", "&gt;" and "&amp;", even if not converted to HTML entities.
+</pre>
+
+<pre class="regex">var re_2 = /\((\?(?:[:|&gt;=!]|&amp;gt;|&amp;lt;[=!]|&lt;[=!]|P?&amp;lt;\w+&amp;gt;|P?&lt;\w+&gt;|'\w+'|
+(?=&lt;span[^&gt;]*&gt;&amp;#40;)|\((?:[+\-]?\d+|&amp;lt;\w+&amp;gt;|&lt;\w+&gt;|'\w+'|\w+|R&amp;amp;\w+|R&amp;\w+)
+\)|(?:R|(?:-?[iJmsUx])+|[+\-]?\d+|&amp;amp;\w+|&amp;\w+|P&amp;gt;\w+|P&gt;\w+|P=\w+)(?=\))))?
+([^()]*)\)((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)/g;</pre>
+
+<pre class="regex re_x"># re_3: Convert escaped parentheses and pipe chars to HTML entities.
+(\\\()  |                    # $1: Escaped left parentheses, or...
+(\\\))  |                    # $2: Escaped right parentheses, or...
+(\\\|)  |                    # $3: Escaped OR pipe char, or...
+([^\\]*(?:\\[^()|][^\\]*)*)  # $4: Everything else.
+</pre>
+
+<pre class="regex">var re_3 = /(\\\()|(\\\))|(\\\|)|([^\\]*(?:\\[^()|][^\\]*)*)/g;</pre>
+
+<pre class="regex re_x"># Example pseudo-regex demonstrating all recognized <a href="http://www.pcre.org/">PCRE</a> component types.
+
+(?# CHARACTER CLASSES)
+[...]                          # positive character class
+[^...]                         # negative character class
+[]...]                         # unescaped ] allowed if first char
+[^]...]                        # unescaped ] allowed if first char
+[x-y]                          # range (can be used for hex characters)
+[[:xxx:]]                      # positive POSIX named set
+[[:^xxx:]]                     # negative POSIX named set
+[[:alpha:][:alpha:][:alpha:]]  # can have multiple embedded POSIX cc
+[[[[[:alpha:][[[[:alpha:][[[]  # can have unescaped non-POSIX class "["
+
+(?# QUANTIFIERS applied to character classes and simple capture groups.)
+[x]?         (x)?         # 0 or 1, greedy
+[x]?+        (x)?+        # 0 or 1, possessive
+[x]??        (x)??        # 0 or 1, lazy
+[x]*         (x)*         # 0 or more, greedy
+[x]*+        (x)*+        # 0 or more, possessive
+[x]*?        (x)*?        # 0 or more, lazy
+[x]+         (x)+         # 1 or more, greedy
+[x]++        (x)++        # 1 or more, possessive
+[x]+?        (x)+?        # 1 or more, lazy
+[x]{1}       (x){1}       # exactly n
+[x]{1,2}     (x){1,2}     # at least n, no more than m, greedy
+[x]{1,2}+    (x){1,2}+    # at least n, no more than m, possessive
+[x]{1,2}?    (x){1,2}?    # at least n, no more than m, lazy
+[x]{1,}      (x){1,}      # n or more, greedy
+[x]{1,}+     (x){1,}+     # n or more, possessive
+[x]{1,}?     (x){1,}?     # n or more, lazy
+[x]{10}      (x){10}      # exactly nn (multiple digits)
+[x]{10,20}   (x){10,20}   # at least nn, no more than mm, greedy
+[x]{10,20}+  (x){10,20}+  # at least nn, no more than mm, possessive
+[x]{10,20}?  (x){10,20}?  # at least nn, no more than mm, lazy
+[x]{10,}     (x){10,}     # nn or more, greedy
+[x]{10,}+    (x){10,}+    # nn or more, possessive
+[x]{10,}?    (x){10,}?    # nn or more, lazy
+
+(?# CAPTURING)
+(...)           # capturing group
+(?&lt;name&gt;...)    # named capturing group (Perl)
+(?'name'...)    # named capturing group (Perl)
+(?P&lt;name&gt;...)   # named capturing group (Python)
+(?:...)         # non-capturing group
+(?|(...)|(...)) # "branch reset" non-capturing group; reset group
+                # numbers for capturing groups in each alternative
+
+(?# ATOMIC GROUPS)
+(?&gt;...)         # atomic, non-capturing group
+
+(?# OPTION SETTING)
+(?i)            # caseless
+(?J)            # allow duplicate names
+(?m)            # multiline
+(?s)            # single line (dotall)
+(?U)            # default ungreedy (lazy)
+(?x)            # extended (ignore white space)
+(?-i)           # NOT caseless
+(?-J)           # NOT allow duplicate names
+(?-m)           # NOT multiline
+(?-s)           # NOT single line (dotall)
+(?-U)           # NOT default ungreedy (lazy)
+(?-x)           # NOT extended (ignore white space)
+(?i-Jm-sU-x)    # multiple options at once.
+(?-iJ-ms-Ux)    # multiple options at once.
+
+(?# LOOKAHEAD AND LOOKBEHIND ASSERTIONS)
+(?=...)         # positive look ahead
+(?!...)         # negative look ahead
+(?&lt;=...)        # positive look behind
+(?&lt;!...)        # negative look behind
+
+(?# BACKREFERENCES)
+(?P=name)       # reference by name (Python)
+
+(?# SUBROUTINE REFERENCES {POSSIBLY RECURSIVE})
+(?R)            # recurse whole pattern
+(?1)            # call subpattern by absolute number
+(?+1)           # call subpattern by relative number
+(?-1)           # call subpattern by relative number
+(?&amp;name)        # call subpattern by name (Perl)
+(?P&gt;name)       # call subpattern by name (Python)
+
+(?# CONDITIONAL PATTERNS)
+(?(condition)yes-pattern)
+(?(condition)yes-pattern|no-pattern)
+(?(1)...)        # absolute reference condition
+(?(+1)...)       # relative reference condition
+(?(-1)...)       # relative reference condition
+(?(&lt;name&gt;)...)   # named reference condition (Perl)
+(?('name')...)   # named reference condition (Perl)
+(?(name)...)     # named reference condition (PCRE)
+(?(R)...)        # overall recursion condition
+(?(R1)...)       # specific group recursion condition
+(?(R&amp;name)...)   # specific recursion condition
+(?(DEFINE)...)   # define subpattern for reference
+(?(?=...)...)    # assertion condition (positive lookahead)
+(?(?!...)...)    # assertion condition (negative lookahead)
+(?(?&lt;=...)...)   # assertion condition (positive lookbehind)
+(?(?&lt;!...)...)   # assertion condition (negative lookbehind)
+</pre>
+</div>
+</body></html>
