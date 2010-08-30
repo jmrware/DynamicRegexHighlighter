@@ -3,10 +3,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Dynamic Regex Highlighting Tester &copy; 2010 Jeff Roberson</title>
+<title>Dynamic Regex Highlighting Tester  (rev:20100830_1200)</title>
 <meta name="author" content="Jeff Roberson" />
-<meta name="version" content="20100829" />
+<meta name="version" content="20100830_1200" />
 <meta name="licence" content="MIT" />
+<style type="text/css" media="screen">
+    body {margin: 2em; color:#333; background:#DDB;}
+    div {margin: 0; padding: 0em 1.5em 1em; border: 2px solid #555; background:#EEC;}
+    pre {margin: 1em 0; padding: 1em; border: 2px solid #555; font-size: 1.2em; overflow: auto;}
+    h1, h2 {font-family: monospace;}
+    .regex_err {color: #FFF; background-color: #F00;}
+    .regex_hl {color: #333; background-color: #0F0;}
+    textarea {width: 99%;}
+</style>
 <script type="text/javascript" src="DynamicRegexHighlighter.js"></script>
 <script type="text/javascript">
 /* <![CDATA[ */
@@ -34,20 +43,12 @@ function handleOnclick() {  // This takes over the form submit button event.
 }
 /* ]]> */
 </script>
-<style type="text/css" media="screen">
-    body {margin: 2em; color:#333; background:#DDB;}
-    div {margin: 0; padding: 0em 1.5em 1em; border: 2px solid #555; background:#EEC;}
-    textarea {width: 99%;}
-    pre {margin: 1em 0; padding: 1em; border: 2px solid #555; font-size: 1.2em; overflow: auto;}
-    h1, h2 {font-family: monospace;}
-    .regex_hl {color: #333; background-color: #0F0;}
-</style>
 </head>
 <body><div>
 <h1 class="regex">Dynamic (?:Regex Highlighting)++ Tester</h1>
-<p>Documentation: <a href="DynamicRegexHighlighter.html">DynamicRegexHighlighter.html</a></p>
+<p>Documentation: <a title="The main documantation page" href="DynamicRegexHighlighter.html">DynamicRegexHighlighter.html</a></p>
 <form action="" method="get">
-<p>Enter a regex. Choose <input id="re_x" type="checkbox" name="re_x" /> Perl "x" free spacing mode option. Click: <input id="submit" type="submit" name="submit" value="submit" onclick="return handleOnclick();"/></p>
+<p>Enter a regex. Choose <input title="Incorrect selection may result in wrongly identified errors." id="re_x" type="checkbox" name="re_x" /> Perl "x" free spacing mode option. Click: <input id="submit" type="submit" name="submit" value="submit" onclick="return handleOnclick();"/></p>
 <p><textarea id="input" name="input" rows="10" cols="80">Type in (?:regex)++ here, choose "x" option (or not), # then click [Submit].</textarea></p>
 <pre class="regex re_x" id="output">Dynamically highlightable regex appears here</pre>
 </form>

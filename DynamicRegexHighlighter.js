@@ -1,6 +1,6 @@
 /* <![CDATA[ */
 /* File:		DynamicRegexHighlighter.js
- * Version:		2010-08-30
+ * Version:		20100830_1200
  * Copyright:	(c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License:	http://www.opensource.org/licenses/mit-license.php
  *
@@ -93,7 +93,7 @@ reHighlightElement = function (elem) {
 // Process DOM element having class: "regex" (and optionally "re_x").
 	var text = elem.innerHTML;
 	if (text.length === 0) return;
-	if (/<\w+\b[^>]*>/.test(text)) return; // Already processed? Exit.
+	if (/<\w+\b[^>]*>/.test(text)) return;	// Already processed? Exit.
 	if (/\bre_x\b/.test(elem.className)) {	// Phase 1.
 		text = text.replace(re_1_cmt, callback1_cmt);
 	} else {
@@ -105,8 +105,10 @@ reHighlightElement = function (elem) {
 	// Markup global/outermost | OR alternatives.
 	text = text.replace(/\|/g,
 		function() {return '<span title="o">&#124;<\/span>';});
+	// Any parentheses left at this point represent errors.
+	text = text.replace(/([()])/g, '<span class="regex_err" title="e">$1<\/span>');
+	// Reflow the document with the new markup.
 	elem = rePutElemContents(elem, text); // This is a bit tricky.
-
 // Phase 3: add mouse event highlighting handlers.
 	var span, title, sibs, re, el, str;
 	capgrp_cnt = 0;	// Reset capture group number.
@@ -143,6 +145,10 @@ reHighlightElement = function (elem) {
 				for (j = 0; j < sibs.length; j++) {
 					sibs[j].title = str;
 				}
+			} else if (title == "e") {
+				for (j = 0; j < sibs.length; j++) {
+					sibs[j].title = "Error: Unbalanced parentheses";
+				}
 			}
 		}
 	}
@@ -153,8 +159,7 @@ function reHideGroupDelims(text) {
 	return text.replace(/\(/g, '&#40;').replace(/\)/g, '&#41;').replace(/\|/g, '&#124;');
 }
 function reHideEscapedGroupDelims(text) {
-	var re_3 = /(\\\()|(\\\))|(\\\|)|([^\\]*(?:\\[^()|][^\\]*)*)/g;
-	return text.replace(re_3,
+	return text.replace(/(\\\()|(\\\))|(\\\|)|([^\\]*(?:\\[^()|][^\\]*)*)/g,
 		function (m0, m1, m2, m3, m4) {
 			if (m1) return '\\&#40;';
 			if (m2) return '\\&#41;';
@@ -194,20 +199,17 @@ rePutElemContents = function (elem, text) {
 };
 function reOnMouseover() { // Add "regex_hl" class to all siblings.
 	for (var i = 0; i < this.sibs.length; i++) {
-		var el = this.sibs[i];
-		if (!el.className) {
-			el.className = "regex_hl";
-		} else if (/\bregex_hl\b/.test(el.className)) {
-			el.className += " " + kl;
+		if (!this.sibs[i].className) {
+			this.sibs[i].className = "regex_hl";
+		} else if (!(/\bregex_hl\b/.test(this.sibs[i].className))) {
+			this.sibs[i].className += " regex_hl";
 		}
-
 	}
 }
 function reOnMouseout() { // Remove "regex_hl" class from all siblings.
 	for (var i = 0; i < this.sibs.length; i++) {
-		var el = this.sibs[i];
-		if (el.className) {
-			el.className = el.className.replace(/\bregex_hl\b/, "");
+		if (this.sibs[i].className) {
+			this.sibs[i].className = this.sibs[i].className.replace(/\bregex_hl\b/, "");
 		}
 	}
 }

@@ -3,32 +3,34 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Dynamic Regex Highlighting with Javascript! &copy; 2010 Jeff Roberson</title>
+<title>Dynamic Regex Highlighting with Javascript! (rev:20100830_1200)</title>
 <meta name="author" content="Jeff Roberson" />
-<meta name="version" content="20100830" />
+<meta name="version" content="20100830_1200" />
 <meta name="licence" content="MIT" />
-<script type="text/javascript" src="DynamicRegexHighlighter.js"></script>
 <style type="text/css" media="screen">
     body {margin: 2em; color:#333; background:#DDB;}
     div {margin: 0; padding: 0em 1.5em 1em; border: 2px solid #555; background:#EEC;}
-    pre {margin: 1em 0; padding: 1em; border: 2px solid #555; font-size: 1.2em;}
+    pre {margin: 1em 0; padding: 1em; border: 2px solid #555; font-size: 1.2em; overflow: auto;}
     h1, h2 {font-family: monospace;}
+    .regex_err {color: #FFF; background-color: #F00;}
     .regex_hl {color: #333; background-color: #0F0;}
 </style>
+<script type="text/javascript" src="DynamicRegexHighlighter.js"></script>
 </head>
 <body>
 <div>
-<h1 class="regex" id="head">Dynamic (?:Regex Highlighting)++ with Javascript!</h1>
-<p>Interactive tester: <a href="DynamicRegexHighlighterTester.html">DynamicRegexHighlighterTester.html</a></p>
-<p>This page demonstrates, documents and tests the Javascript dynamic regex highlighter script: <tt><a href="http://github.com/jmrware/DynamicRegexHighlighter/blob/master/DynamicRegexHighlighter.js">DynamicRegexHighlighter.js</a></tt>. Each regular expressions from the script is presented below in two formats: 1.) fully commented in free-spacing format, and 2.) uncommented in native Javascript format. Additionally, an extended example pseudo regex is provided which tests the various <a href="http://www.pcre.org/">PCRE</a> regex constructs that this script recognizes. During the page load process, (which can take quite some time if there are many highly complex regexes on the page), progress information is displayed in the browser's status bar at the bottom of the page (if the browser is setup to allow this.) Once the page is loaded, the script is idle except for <tt>mouseover</tt> and <tt>mouseout</tt> events, which are handled very quickly. When the page is unloaded, the script once again comes back to life to free up the memory it allocated and to null out all its references to DOM node objects (to prevent nefarious memory leaks that happen in IE if you don't).</p>
+<h1 class="regex">Dynamic (?:Regex Highlighting)++ with Javascript!</h1>
+<p>Interactive tester: <a title="This page allows you to test the highlighter with your own regular expressions" href="DynamicRegexHighlighterTester.html">DynamicRegexHighlighterTester.html</a></p>
+<p>This page demonstrates, documents and tests the Javascript dynamic regex highlighter script: <tt><a title="Link to Github repository hosting this project" href="http://github.com/jmrware/DynamicRegexHighlighter/blob/master/DynamicRegexHighlighter.js">DynamicRegexHighlighter.js</a></tt>. To see the highlighting in action, place the mouse cursor over the various parts of the regular expressions below. The components which are highlighted include: matching character class delimiters (and any quantifiers), comments, comment groups and matching (possibly nested) group delimiters (and their quantifiers). When moused over, these regex components are highlighted in <span class="regex_hl">GREEN</span> (or more precisely, in whatever style is defined by the CSS class: <tt>.regex_hl</tt>). The script identifies erroneous unbalanced parentheses and these are displayed as <span class="regex_err">RED</span> (or more precisely, in whatever style is defined by the CSS class: <tt>.regex_err</tt>). When the mouse is placed over a numbered capturing group, a tooltip appears indicating the capture group number (e.g. "Capture group $3"). Note, however, that if the regex has a "branch reset" construct, <tt class="regex">(?|(like)|(this)|(one))</tt>, then the script is not smart enough to compute capture groups numbers beyond that point. In this case, affected capture group numbers are simply not included in the tooltips.</p>
 
-<p>To see the highlighting in action, place the mouse cursor over the various parts of the regular expressions below. The components which are highlighted include: matching character class delimiters (and any quantifiers), comments, comment groups and matching (possibly nested) group delimiters (and their quantifiers). When moused over, these regex components are highlighted in <span class="regex_hl">green</span> (or more precisely, in whatever style is defined by the CSS class selector: "<tt>.regex_hl</tt>"). Additionally, when the mouse is placed over a numbered capturing group, a tooltip appears indicating the capture group number (e.g. "Capture group $3"). Note, however, that if the regex has a "branch reset" construct, <tt class="regex">(?|(like)|(this)|(one))</tt>, then the script is not smart enough to compute capture groups numbers beyond that point. In this case, affected capture group numbers are simply not included in the tooltips.</p>
+
+<p>Each regular expressions from the script is presented below in two formats: 1.) fully commented in free-spacing format, and 2.) uncommented in native Javascript format. Additionally, an extended example pseudo regex is provided which tests the various <a title="The Perl Compatible Regular Expression library" href="http://www.pcre.org/">PCRE</a> regex constructs that this script recognizes. During the page load process, (which can take quite some time on pages that contain many large, highly complex regexes), progress information is displayed in the browser's status bar at the bottom of the page (if the browser is setup to allow this.) Once the page is loaded, the script is idle except for <tt>mouseover</tt> and <tt>mouseout</tt> events, which are handled very quickly. When the page is unloaded, the script once again comes back to life to free up the memory it allocated and to null out all its references to DOM node objects (to prevent nefarious memory leaks that happen in IE if you don't).</p>
 
 <h2 class="regex">Usage: (easy as one two three!)</h2>
 <ol>
     <li>Add a script tag to the document head element to include: <tt>DynamicRegexHighlighter.js</tt>.<br />e.g. <tt style="color: #080;">&lt;script type="text/javascript" src="DynamicRegexHighlighter.js"&gt;&lt;/script&gt;</tt></li>
-    <li>Add a <tt>.regex_hl</tt> class selector to the stylesheet to define what the highlighted regex text should look like.<br />e.g. <tt style="color: #080;">&lt;style type="text/css"&gt;.regex_hl {color: #333; background-color: #0F0;}&lt;/style&gt;</tt></li>
-    <li>Wrap the regex to be highlighted in an element having <tt>class="regex"</tt>. There must be no other HTML tags embedded within the regex text. The regular expression should be valid and in native regex format and should have all "<tt>&lt;</tt>", "<tt>&gt;</tt>" and "<tt>&amp;</tt>" characters converted to HTML entities, so that the web page is valid. If the regex is written in free-spacing mode with <tt>#comments</tt> and defined whitespace indentation (i.e. with Perl syntax "x" modifier set), add "<tt>re_x</tt>" to the class, and wrap it in a <tt>PRE</tt> tag (to preserve whitespace for IE).<br />e.g. <tt class="regex" style="color: #080;">&lt;h1 class="regex"&gt;Dynamic (?:Regex Highlighting)++ with Javascript!&lt;/h1"&gt;</tt><br />e.g. <tt style="color: #080;">&lt;pre class="regex re_x"&gt;<span class="regex re_x">Regex with #comments here.</span>&lt;/pre"&gt;</tt></li>
+    <li>Add a <tt>.regex_hl</tt> class selector to the stylesheet to define what the highlighted regex text should look like. To show unbalanced parentheses as visible errors, add a <tt>.regex_err</tt> class selector to the stylesheet before the <tt>.regex_hl</tt> rule.<br />e.g. <tt style="color: #080;">&lt;style type="text/css"&gt;.regex_err {color: #FFF; background-color: #F00;}<br />.regex_hl {color: #333; background-color: #0F0;}&lt;/style&gt;</tt></li>
+    <li>Wrap the regex to be highlighted in an element having <tt>class="regex"</tt>. There must be no other HTML tags embedded within the regex text. The regular expression should be valid and in <em title="i.e. Extra backslashes may confuse the script">native regex format</em> and should have all "<tt>&lt;</tt>", "<tt>&gt;</tt>" and "<tt>&amp;</tt>" characters converted to HTML entities, so that the web page is valid. If the regex is written in free-spacing mode with <tt>#comments</tt> and defined whitespace indentation (i.e. with Perl syntax "x" modifier set), add "<tt>re_x</tt>" to the class, and wrap it in a <tt>PRE</tt> tag (to preserve whitespace for IE).<br />e.g. <tt class="regex" style="color: #080;">&lt;h1 class="regex"&gt;Dynamic (?:Regex Highlighting)++ with Javascript!&lt;/h1"&gt;</tt><br />e.g. <tt style="color: #080;">&lt;pre class="regex re_x"&gt;<span class="regex re_x">Regex with #comments here.</span>&lt;/pre"&gt;</tt></li>
 </ol>
 
 <p>Following are all the regexes from the <tt>DynamicRegexHighlighter.js</tt> script. First up is the Phase 1 regex used to parse regexes having commenting turned on (i.e. regexes with the Perl style "x" modifier set). The first listing is this regex in verbose format with a liberal sprinkling of comments and indentation for clarity.</p>
@@ -126,14 +128,14 @@
 \)|(?:R|(?:-?[iJmsUx])+|[+\-]?\d+|&amp;amp;\w+|&amp;\w+|P&amp;gt;\w+|P&gt;\w+|P=\w+)(?=\))))?
 ([^()]*)\)((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)/g;</pre>
 
-<pre class="regex re_x"># re_3: Convert escaped parentheses and pipe chars to HTML entities.
+<pre class="regex re_x"># re_escapedgroupdelims: Convert escaped group delim chars to HTML entities.
 (\\\()  |                    # $1: Escaped left parentheses, or...
 (\\\))  |                    # $2: Escaped right parentheses, or...
 (\\\|)  |                    # $3: Escaped OR pipe char, or...
 ([^\\]*(?:\\[^()|][^\\]*)*)  # $4: Everything else.
 </pre>
 
-<pre class="regex">var re_3 = /(\\\()|(\\\))|(\\\|)|([^\\]*(?:\\[^()|][^\\]*)*)/g;</pre>
+<pre class="regex">/(\\\()|(\\\))|(\\\|)|([^\\]*(?:\\[^()|][^\\]*)*)/g;</pre>
 
 <pre class="regex re_x"># Example pseudo-regex demonstrating all recognized PCRE component types.
 
@@ -235,6 +237,9 @@
 (?(?!...)...)    # assertion condition (negative lookahead)
 (?(?&lt;=...)...)   # assertion condition (positive lookbehind)
 (?(?&lt;!...)...)   # assertion condition (negative lookbehind)
+
+(?# ERROR CONDITION)
+) ) ( (          # unbalanced parentheses
 </pre>
 </div>
 </body></html>
