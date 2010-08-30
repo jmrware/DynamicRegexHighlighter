@@ -1,5 +1,5 @@
 /* File:        README for DynamicRegexHighlighter.js
- * Version:     20100830_1200
+ * Version:     20100830_1600
  * Copyright:   (c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License: see: http://www.opensource.org/licenses/mit-license.php
  *

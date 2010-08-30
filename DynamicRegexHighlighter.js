@@ -1,6 +1,6 @@
 /* <![CDATA[ */
 /* File:		DynamicRegexHighlighter.js
- * Version:		20100830_1200
+ * Version:		20100830_1600
  * Copyright:	(c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License:	http://www.opensource.org/licenses/mit-license.php
  *
@@ -229,9 +229,7 @@ function reGetElemsByKlassName(base_el, kl) {
 }
 function rePrepareAllMarkup() {
 	// Process all elements having class: "regex".
-	var len = re_elems.length;
-	window.status = "Marking up " + len + " regex elements...";
-	for (var i = 0; i < len; i++) {
+	for (var i = 0; i < re_elems.length; i++) {
 		reHighlightElement(re_elems[i]);
 		re_elems[i] = null;
 	}
@@ -243,6 +241,7 @@ reHideHtmlSpecialChars = function(text) {
 function reOnload() {
 	re_elems = reGetElemsByKlassName(document, 'regex');
 	if (re_elems.length > 0) {
+		window.status = "Marking up " + re_elems.length + " regex elements...";
 		reAddUnloadEvent(reOnunload);
 		setTimeout(rePrepareAllMarkup, 0);
 	}
