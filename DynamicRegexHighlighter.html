@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Dynamic Regex Highlighting with Javascript! &copy; 2010 Jeff Roberson</title>
 <meta name="author" content="Jeff Roberson" />
-<meta name="version" content="20100829" />
+<meta name="version" content="20100830" />
 <meta name="licence" content="MIT" />
 <script type="text/javascript" src="DynamicRegexHighlighter.js"></script>
 <style type="text/css" media="screen">
@@ -20,7 +20,7 @@
 <div>
 <h1 class="regex" id="head">Dynamic (?:Regex Highlighting)++ with Javascript!</h1>
 <p>Interactive tester: <a href="DynamicRegexHighlighterTester.html">DynamicRegexHighlighterTester.html</a></p>
-<p>This page demonstrates, documents and tests the Javascript dynamic regex highlighter script: <tt><a href="DynamicRegexHighlighter.js.txt">DynamicRegexHighlighter.js</a></tt>. Each regular expressions from the script is presented below in two formats: 1.) fully commented in free-spacing format, and 2.) uncommented in native Javascript format. Additionally, an extended example pseudo regex is provided which tests the various PCRE regex constructs that this script recognizes. During the page load process, (which can take quite some time if there are many highly complex regexes on the page), progress information is displayed in the browser's status bar at the bottom of the page (if the browser is setup to allow this.) Once the page is loaded, the script is idle except for <tt>mouseover</tt> and <tt>mouseout</tt> events, which are handled very quickly. When the page is unloaded, the script once again comes back to life to free up the memory it allocated and to null out all its references to DOM node objects (to prevent nefarious memory leaks that happen in IE if you don't).</p>
+<p>This page demonstrates, documents and tests the Javascript dynamic regex highlighter script: <tt><a href="http://github.com/jmrware/DynamicRegexHighlighter/blob/master/DynamicRegexHighlighter.js">DynamicRegexHighlighter.js</a></tt>. Each regular expressions from the script is presented below in two formats: 1.) fully commented in free-spacing format, and 2.) uncommented in native Javascript format. Additionally, an extended example pseudo regex is provided which tests the various <a href="http://www.pcre.org/">PCRE</a> regex constructs that this script recognizes. During the page load process, (which can take quite some time if there are many highly complex regexes on the page), progress information is displayed in the browser's status bar at the bottom of the page (if the browser is setup to allow this.) Once the page is loaded, the script is idle except for <tt>mouseover</tt> and <tt>mouseout</tt> events, which are handled very quickly. When the page is unloaded, the script once again comes back to life to free up the memory it allocated and to null out all its references to DOM node objects (to prevent nefarious memory leaks that happen in IE if you don't).</p>
 
 <p>To see the highlighting in action, place the mouse cursor over the various parts of the regular expressions below. The components which are highlighted include: matching character class delimiters (and any quantifiers), comments, comment groups and matching (possibly nested) group delimiters (and their quantifiers). When moused over, these regex components are highlighted in <span class="regex_hl">green</span> (or more precisely, in whatever style is defined by the CSS class selector: "<tt>.regex_hl</tt>"). Additionally, when the mouse is placed over a numbered capturing group, a tooltip appears indicating the capture group number (e.g. "Capture group $3"). Note, however, that if the regex has a "branch reset" construct, <tt class="regex">(?|(like)|(this)|(one))</tt>, then the script is not smart enough to compute capture groups numbers beyond that point. In this case, affected capture group numbers are simply not included in the tooltips.</p>
 
@@ -28,10 +28,10 @@
 <ol>
     <li>Add a script tag to the document head element to include: <tt>DynamicRegexHighlighter.js</tt>.<br />e.g. <tt style="color: #080;">&lt;script type="text/javascript" src="DynamicRegexHighlighter.js"&gt;&lt;/script&gt;</tt></li>
     <li>Add a <tt>.regex_hl</tt> class selector to the stylesheet to define what the highlighted regex text should look like.<br />e.g. <tt style="color: #080;">&lt;style type="text/css"&gt;.regex_hl {color: #333; background-color: #0F0;}&lt;/style&gt;</tt></li>
-    <li>The regular expression should be valid and in native regex format and should have all "<tt>&lt;</tt>", "<tt>&gt;</tt>" and "<tt>&amp;</tt>" characters converted to HTML entities, so that the web page is valid. Wrap the regex to be highlighted in an element having <tt>class="regex"</tt>. If the regex is written in free-spacing mode with <tt>#comments</tt> and defined whitespace indentation (i.e. with Perl syntax "x" modifier set), add "<tt>re_x</tt>" to the class, and wrap it in a <tt>PRE</tt> tag (to preserve whitespace for IE).<br />e.g. <tt class="regex" style="color: #080;">&lt;h1 class="regex"&gt;Dynamic (?:Regex Highlighting)++ with Javascript!&lt;/h1"&gt;</tt><br />e.g. <tt style="color: #080;">&lt;pre class="regex re_x"&gt;<span class="regex re_x">Regex with #comments here.</span>&lt;/pre"&gt;</tt></li>
+    <li>Wrap the regex to be highlighted in an element having <tt>class="regex"</tt>. There must be no other HTML tags embedded within the regex text. The regular expression should be valid and in native regex format and should have all "<tt>&lt;</tt>", "<tt>&gt;</tt>" and "<tt>&amp;</tt>" characters converted to HTML entities, so that the web page is valid. If the regex is written in free-spacing mode with <tt>#comments</tt> and defined whitespace indentation (i.e. with Perl syntax "x" modifier set), add "<tt>re_x</tt>" to the class, and wrap it in a <tt>PRE</tt> tag (to preserve whitespace for IE).<br />e.g. <tt class="regex" style="color: #080;">&lt;h1 class="regex"&gt;Dynamic (?:Regex Highlighting)++ with Javascript!&lt;/h1"&gt;</tt><br />e.g. <tt style="color: #080;">&lt;pre class="regex re_x"&gt;<span class="regex re_x">Regex with #comments here.</span>&lt;/pre"&gt;</tt></li>
 </ol>
 
-<p>Following are all the regexes from the <tt><a href="DynamicRegexHighlighter.js.txt">DynamicRegexHighlighter.js</a></tt> script. First up is the Phase 1 regex used to parse regexes having commenting turned on (i.e. regexes with the Perl style "x" modifier set). The first listing is this regex in verbose format with a liberal sprinkling of comments and indentation for clarity.</p>
+<p>Following are all the regexes from the <tt>DynamicRegexHighlighter.js</tt> script. First up is the Phase 1 regex used to parse regexes having commenting turned on (i.e. regexes with the Perl style "x" modifier set). The first listing is this regex in verbose format with a liberal sprinkling of comments and indentation for clarity.</p>
 <!-- adding class="re_x" sets free-spacing regex mode where "# comments" are properly handled -->
 <pre class="regex re_x" id="n1"># re_1_cmt: Match regex character classes, comments and comment groups.
   (\[\^?)                                 # $1: Character class opening delim.
@@ -135,7 +135,7 @@
 
 <pre class="regex">var re_3 = /(\\\()|(\\\))|(\\\|)|([^\\]*(?:\\[^()|][^\\]*)*)/g;</pre>
 
-<pre class="regex re_x"># Example pseudo-regex demonstrating all recognized <a href="http://www.pcre.org/">PCRE</a> component types.
+<pre class="regex re_x"># Example pseudo-regex demonstrating all recognized PCRE component types.
 
 (?# CHARACTER CLASSES)
 [...]                          # positive character class

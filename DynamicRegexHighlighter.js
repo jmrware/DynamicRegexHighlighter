@@ -1,6 +1,6 @@
 /* <![CDATA[ */
 /* File:		DynamicRegexHighlighter.js
- * Version:		2010-08-29
+ * Version:		2010-08-30
  * Copyright:	(c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License:	http://www.opensource.org/licenses/mit-license.php
  *
@@ -46,7 +46,7 @@ reHighlightElement = function (elem) {
 			m6 = reHideGroupDelims(m6);
 			return '<span title="m' + cmt_cnt + '">' + m6 + '<\/span>';
 		}
-		if (m7) return reHideEscapedGroupDelims(m7);	// Group 7: Everything else.
+		if (m7) return reHideEscapedGroupDelims(m7); // Group 7: Everything else.
 		return '';
 	};
 	var re_1_nocmt = /(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\(\?#[^)]*\))|(\((?!\?#))|([^[(\\]*(?:\\[\S\s][^[(\\]*)*)/g;
@@ -64,7 +64,7 @@ reHighlightElement = function (elem) {
 		if (m5) {	// Group 5: Non-comment group opening (.
 			return m5;
 		}
-		if (m6) return reHideEscapedGroupDelims(m6);	// Group 6: Everything else.
+		if (m6) return reHideEscapedGroupDelims(m6); // Group 6: Everything else.
 		return '';
 	};
 // Phase 2: - Mark matching parentheses and pipe OR symbols from inside out
@@ -93,6 +93,7 @@ reHighlightElement = function (elem) {
 // Process DOM element having class: "regex" (and optionally "re_x").
 	var text = elem.innerHTML;
 	if (text.length === 0) return;
+	if (/<\w+\b[^>]*>/.test(text)) return; // Already processed? Exit.
 	if (/\bre_x\b/.test(elem.className)) {	// Phase 1.
 		text = text.replace(re_1_cmt, callback1_cmt);
 	} else {
@@ -105,7 +106,47 @@ reHighlightElement = function (elem) {
 	text = text.replace(/\|/g,
 		function() {return '<span title="o">&#124;<\/span>';});
 	elem = rePutElemContents(elem, text); // This is a bit tricky.
-	rePrepareHighlighting(elem); // Phase 3: add mouse event highlighting handlers.
+
+// Phase 3: add mouse event highlighting handlers.
+	var span, title, sibs, re, el, str;
+	capgrp_cnt = 0;	// Reset capture group number.
+	brgrp_cnt = 0;	// Reset branch reset group count.
+	var spans = elem.getElementsByTagName('span');
+	var span_cnt = spans.length;
+	for (var i = 0; i < span_cnt; i++) {
+		span = spans[i];
+		if (!span.sibs) {
+			sibs = []; // Gather array of all sibling spans.
+			title = span.title;
+			re = RegExp("\\b" + title + "\\b", "i");
+			for (var j = 0; j < span_cnt; j++) {
+				el = spans[j];
+				if (!el.sibs && re.test(el.title)) {
+					sibs.push(el);
+				}
+			}
+			for (j = 0; j < sibs.length; j++) { // Loop through sibling spans.
+				el = sibs[j];
+				el.sibs = sibs;
+				el.removeAttribute("title");
+				el.onmouseover = reOnMouseover;
+				el.onmouseout  = reOnMouseout;
+			}
+			if (title.indexOf("b") === 0) {
+				brgrp_cnt++;
+			} else if (title.indexOf("p") === 0) {
+				capgrp_cnt++;
+				str = "Capture group";
+				// If there are no (?|(branch)(reset)) groups yet, then
+				// we know the capture group number. Otherwise we don't.
+				if (brgrp_cnt === 0) str += " $" + capgrp_cnt;
+				for (j = 0; j < sibs.length; j++) {
+					sibs[j].title = str;
+				}
+			}
+		}
+	}
+	span = null; sibs = null; el = null; spans = null;
 	elem = null;
 };
 function reHideGroupDelims(text) {
@@ -151,55 +192,23 @@ rePutElemContents = function (elem, text) {
 	}
 	return elem;
 };
-function rePrepareHighlighting(elem) {
-	var span, title, sibs, re, el, str;
-	var capgrp_cnt = 0;	// Capture group number.
-	var brgrp_cnt = 0;	// Branch reset group count.
-	var spans = elem.getElementsByTagName('span');
-	var span_cnt = spans.length;
-	for (var i = 0; i < span_cnt; i++) {
-		span = spans[i];
-		if (!span.sibs) {
-			sibs = []; // Gather array of all sibling spans.
-			title = span.title;
-			re = RegExp("\\b" + title + "\\b", "i");
-			for (var j = 0; j < span_cnt; j++) {
-				el = spans[j];
-				if (!el.sibs && re.test(el.title)) {
-					sibs.push(el);
-				}
-			}
-			for (j = 0; j < sibs.length; j++) { // Loop through sibling spans.
-				el = sibs[j];
-				el.sibs = sibs;
-				el.removeAttribute("title");
-				el.onmouseover = reOnMouseover;
-				el.onmouseout  = reOnMouseout;
-			}
-			if (title.indexOf("b") === 0) {
-				brgrp_cnt++;
-			} else if (title.indexOf("p") === 0) {
-				capgrp_cnt++;
-				str = "Capture group";
-				// If there are no (?|(branch)(reset)) groups yet, then
-				// we know the capture group number. Otherwise we don't.
-				if (brgrp_cnt === 0) str += " $" + capgrp_cnt;
-				for (j = 0; j < sibs.length; j++) {
-					sibs[j].title = str;
-				}
-			}
+function reOnMouseover() { // Add "regex_hl" class to all siblings.
+	for (var i = 0; i < this.sibs.length; i++) {
+		var el = this.sibs[i];
+		if (!el.className) {
+			el.className = "regex_hl";
+		} else if (/\bregex_hl\b/.test(el.className)) {
+			el.className += " " + kl;
 		}
-	}
-	span = null; sibs = null; el = null; spans = null;
-}
-function reOnMouseover() {
-	for (var i = 0; i < this.sibs.length; i++) {
-		reAddKlass(this.sibs[i], 'regex_hl');
+
 	}
 }
-function reOnMouseout() {
+function reOnMouseout() { // Remove "regex_hl" class from all siblings.
 	for (var i = 0; i < this.sibs.length; i++) {
-		reRemoveKlass(this.sibs[i], 'regex_hl');
+		var el = this.sibs[i];
+		if (el.className) {
+			el.className = el.className.replace(/\bregex_hl\b/, "");
+		}
 	}
 }
 function reGetElemsByKlassName(base_el, kl) {
@@ -215,18 +224,6 @@ function reGetElemsByKlassName(base_el, kl) {
 	}
 	el = null; elems = null;
 	return kl_els;
-}
-function reAddKlass(el, kl) {
-	if (!el.className) {
-		el.className = kl;
-	} else if (!RegExp("\\b" + kl + "\\b", "i").test(el.className)) {
-		el.className += " " + kl;
-	}
-}
-function reRemoveKlass(el, kl) {
-	if (el.className) {
-		el.className = el.className.replace(RegExp("\\s*\\b" + kl + "\\b", "i"), "");
-	}
 }
 function rePrepareAllMarkup() {
 	// Process all elements having class: "regex".
