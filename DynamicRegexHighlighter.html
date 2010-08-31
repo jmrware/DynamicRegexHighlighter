@@ -3,9 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Dynamic Regex Highlighting with Javascript! (rev:20100830_1600)</title>
+<title>Dynamic Regex Highlighting with Javascript! (rev:20100831_1400)</title>
 <meta name="author" content="Jeff Roberson" />
-<meta name="version" content="20100830_1600" />
+<meta name="version" content="20100831_1400" />
 <meta name="licence" content="MIT" />
 <style type="text/css" media="screen">
     body {margin: 2em; color:#333; background:#DDB;}
@@ -21,10 +21,10 @@
 <div>
 <h1 class="regex">Dynamic (?:Regex Highlighting)++ with Javascript!</h1>
 <p>Interactive tester: <a title="This page allows you to test the highlighter with your own regular expressions" href="DynamicRegexHighlighterTester.html">DynamicRegexHighlighterTester.html</a></p>
-<p>This page demonstrates, documents and tests the Javascript dynamic regex highlighter script: <tt><a title="Link to Github repository hosting this project" href="http://github.com/jmrware/DynamicRegexHighlighter/blob/master/DynamicRegexHighlighter.js">DynamicRegexHighlighter.js</a></tt>. To see the highlighting in action, place the mouse cursor over the various parts of the regular expressions below. The components which are highlighted include: matching character class delimiters (and any quantifiers), comments, comment groups and matching (possibly nested) group delimiters (and their quantifiers). When moused over, these regex components are highlighted in <span class="regex_hl">GREEN</span> (or more precisely, in whatever style is defined by the CSS class: <tt>.regex_hl</tt>). The script identifies erroneous unbalanced parentheses and these are displayed as <span class="regex_err">RED</span> (or more precisely, in whatever style is defined by the CSS class: <tt>.regex_err</tt>). When the mouse is placed over a numbered capturing group, a tooltip appears indicating the capture group number (e.g. "Capture group $3"). Note, however, that if the regex has a "branch reset" construct, <tt class="regex">(?|(like)|(this)|(one))</tt>, then the script is not smart enough to compute capture groups numbers beyond that point. In this case, affected capture group numbers are simply not included in the tooltips.</p>
+<p>This page demonstrates, documents and tests the Javascript dynamic regex highlighter script: <tt><a title="Download latest version from Github repository" href="http://github.com/jmrware/DynamicRegexHighlighter/">DynamicRegexHighlighter.js</a></tt>. To see the highlighting in action, place the mouse cursor over the various parts of the regular expressions below. The components which are highlighted include: matching character class delimiters (and any quantifiers), comments, comment groups and matching (possibly nested) group delimiters (and their quantifiers). When moused over, these regex components are highlighted in <span class="regex_hl">GREEN</span> (or more precisely, in whatever style is defined by the CSS class: <tt>.regex_hl</tt>). The script identifies erroneous unbalanced parentheses and these are displayed as <span class="regex_err">RED</span> (or more precisely, in whatever style is defined by the CSS class: <tt>.regex_err</tt>). When the mouse is placed over a numbered capturing group, a tooltip appears indicating the capture group number (e.g. "Capture group $3"). Note, however, that if the regex has a "branch reset" construct, <tt class="regex">(?|(like)|(this)|(one))</tt>, then the script is not smart enough to compute capture group numbers beyond that point. In this case, affected capture group numbers are simply not included in the tooltips.</p>
 
 
-<p>Each regular expressions from the script is presented below in two formats: 1.) fully commented in free-spacing format, and 2.) uncommented in native Javascript format. Additionally, an extended example pseudo regex is provided which tests the various <a title="The Perl Compatible Regular Expression library" href="http://www.pcre.org/">PCRE</a> regex constructs that this script recognizes. During the page load process, (which can take quite some time on pages that contain many large, highly complex regexes), progress information is displayed in the browser's status bar at the bottom of the page (if the browser is setup to allow this.) Once the page is loaded, the script is idle except for <tt>mouseover</tt> and <tt>mouseout</tt> events, which are handled very quickly. When the page is unloaded, the script once again comes back to life to free up the memory it allocated and to null out all its references to DOM node objects (to prevent nefarious memory leaks that happen in IE if you don't).</p>
+<p>Each regular expression from the script is presented below in two formats: 1.) fully commented in free-spacing format, and 2.) uncommented in native Javascript format. Additionally, an extended example pseudo regex is provided which tests the various <a title="The Perl Compatible Regular Expression library" href="http://www.pcre.org/">PCRE</a> regex constructs that this script recognizes. During the page load process, (which can take quite some time on pages that contain many large, highly complex regexes), progress information is displayed in the browser's status bar at the bottom of the page (if the browser is setup to allow this.) Once the page is loaded, the script is idle except for <tt>mouseover</tt> and <tt>mouseout</tt> events, which are handled very quickly. When the page is unloaded, the script once again comes back to life to free up the memory it allocated and to null out all its references to DOM node objects (to prevent nefarious memory leaks that happen in IE if you don't).</p>
 
 <h2 class="regex">Usage: (easy as one two three!)</h2>
 <ol>
@@ -36,51 +36,57 @@
 <p>Following are all the regexes from the <tt>DynamicRegexHighlighter.js</tt> script. First up is the Phase 1 regex used to parse regexes having commenting turned on (i.e. regexes with the Perl style "x" modifier set). The first listing is this regex in verbose format with a liberal sprinkling of comments and indentation for clarity.</p>
 <!-- adding class="re_x" sets free-spacing regex mode where "# comments" are properly handled -->
 <pre class="regex re_x" id="n1"># re_1_cmt: Match regex character classes, comments and comment groups.
-  (\[\^?)                                 # $1: Character class opening delim.
-  (                                       # $2: Character class contents.
+  ( [^[(#\\]+(?:\\[\S\s][^[(#\\]*)*       # $1: Everything else (starting w/non-escape)
+  |          (?:\\[\S\s][^[(#\\]*)+       #  or everything else (starting w/escape).
+  )                                       # End $1.
+| (\[\^?)                                 # $2: Character class opening delim.
+  (                                       # $3: Character class contents.
     \]?                                   # Unescaped ] allowed if first char.
     [^\][\\]*(?:\\[\S\s][^\][\\]*)*       # Non-[], escaped-anything (normal*).
     (?: \[                                # Allow a non-escaped "[", and it
       (?::\^?\w+:\])?                     # may be embedded POSIX char class.
       [^\][\\]*(?:\\[\S\s][^\][\\]*)*     # More non-[], escaped-anything.
     )*                                    # Unroll-the-loop (special normal*)*
-  )                                       # End $2. Character class contents.
+  )                                       # End $3. Character class contents.
   \]                                      # Character class closing delimiter.
-  ((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)  # $3: Optional cc quantifier.
-| (\(\?\#[^)]*\))                         # $4: Comment group (cmt_grp).
+  ((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)  # $4: Optional cc quantifier.
 | (\((?!\?\#))                            # $5: Opening "(" (non comment group).
-| (\#.*)                                  # $6: Comment (cmt).
-| ([^[(#\\]*(?:\\[\S\s][^[(#\\]*)*)       # $7: Everything else.
+| (\(\?\#[^)]*\))                         # $6: Comment group (cmt_grp).
+| (\#.*)                                  # $7: Comment (cmt).
 </pre>
 
 <p>Following is the exact same regex in its raw, uncommented native Javascript format as it appears in the script (with a few added newlines to avoid it going off screen).</p>
 <!-- adding class="regex" to any element will cause it to be processed as a regular expression -->
-<pre class="regex">var re_1_cmt = /(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?
-[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|
-(\(\?#[^)]*\))|(\((?!\?#))|(#.*)|([^[(#\\]*(?:\\[\S\s][^[(#\\]*)*)/g;</pre>
+<pre class="regex">var re_1_cmt = /([^[(#\\]+(?:\\[\S\s][^[(#\\]*)*|(?:\\[\S\s][^[(#\\]*)+)
+|(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*
+(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)
+|(\((?!\?#))|(\(\?#[^)]*\))|(#.*)/g;</pre>
 
 <p>Following, are the remaining regular expressions from the script in both commented and non-commented formats. Happy regexing!</p>
 
 <pre class="regex re_x"># re_1_nocmt: Match regex character classes and comment groups (no comments).
-  (\[\^?)                                 # $1: Character class opening delim.
-  (                                       # $2: Character class contents.
+  ( [^[(\\]+(?:\\[\S\s][^[(\\]*)*         # $1: Everything else (starting w/non-escape)
+  |         (?:\\[\S\s][^[(\\]*)+         #  or everything else (starting w/escape).
+  )                                       # End $1.
+| (\[\^?)                                 # $2: Character class opening delim.
+  (                                       # $3: Character class contents.
     \]?                                   # Unescaped ] allowed if first char.
     [^\][\\]*(?:\\[\S\s][^\][\\]*)*       # Non-[], escaped-anything (normal*).
     (?: \[                                # Allow a non-escaped "[", and it
       (?::\^?\w+:\])?                     # may be embedded POSIX char class.
       [^\][\\]*(?:\\[\S\s][^\][\\]*)*     # More non-[], escaped-anything.
     )*                                    # Unroll-the-loop (special normal*)*
-  )                                       # End $2. Character class contents.
+  )                                       # End $3. Character class contents.
   \]                                      # Character class closing delimiter.
-  ((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)  # $3: Optional cc quantifier.
-| (\(\?\#[^)]*\))                         # $4: Comment group (cmt_grp).
+  ((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)  # $4: Optional cc quantifier.
 | (\((?!\?\#))                            # $5: Opening "(" (non comment group).
-| ([^[(\\]*(?:\\[\S\s][^[(\\]*)*)         # $6: Everything else.
+| (\(\?\#[^)]*\))                         # $6: Comment group (cmt_grp).
 </pre>
 
-<pre class="regex">var re_1_nocmt = /(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?
-[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|
-(\(\?#[^)]*\))|(\((?!\?#))|([^[(\\]*(?:\\[\S\s][^[(\\]*)*)/g;</pre>
+<pre class="regex">var re_1_nocmt = /([^[(\\]+(?:\\[\S\s][^[(\\]*)*|(?:\\[\S\s][^[(\\]*)+)
+|(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*
+(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)
+|(\((?!\?#))|(\(\?#[^)]*\))/g;</pre>
 
 <pre class="regex re_x"># re_2: Match inner (non-nested) PCRE syntax regex groups.
 \(                         # Regex group opening "(" delimiter.
@@ -101,9 +107,9 @@
     | &amp;lt;\w+&amp;gt;          # Named reference condition (Perl) (HTML entity).
     | &lt;\w+&gt;                # Named reference condition (Perl) (Note 1).
     | '\w+'                # Named reference condition (Perl).
-    | \w+                  # Named reference condition (PCRE)
     | R&amp;amp;\w+            # specific recursion condition (HTML entity).
     | R&amp;\w+                # specific recursion condition (Note 1).
+    | \w+                  # Named reference condition (PCRE)
     ) \)                   # End conditional group with ")" delimiter.
   | (?:                    # Group types that must have zero content.
       R                    # Recurse whole pattern.
@@ -124,18 +130,20 @@
 </pre>
 
 <pre class="regex">var re_2 = /\((\?(?:[:|&gt;=!]|&amp;gt;|&amp;lt;[=!]|&lt;[=!]|P?&amp;lt;\w+&amp;gt;|P?&lt;\w+&gt;|'\w+'|
-(?=&lt;span[^&gt;]*&gt;&amp;#40;)|\((?:[+\-]?\d+|&amp;lt;\w+&amp;gt;|&lt;\w+&gt;|'\w+'|\w+|R&amp;amp;\w+|R&amp;\w+)
+(?=&lt;span[^&gt;]*&gt;&amp;#40;)|\((?:[+\-]?\d+|&amp;lt;\w+&amp;gt;|&lt;\w+&gt;|'\w+'|R&amp;amp;\w+|R&amp;\w+|\w+)
 \)|(?:R|(?:-?[iJmsUx])+|[+\-]?\d+|&amp;amp;\w+|&amp;\w+|P&amp;gt;\w+|P&gt;\w+|P=\w+)(?=\))))?
 ([^()]*)\)((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)/g;</pre>
 
-<pre class="regex re_x"># re_escapedgroupdelims: Convert escaped group delim chars to HTML entities.
-(\\\()  |                    # $1: Escaped left parentheses, or...
-(\\\))  |                    # $2: Escaped right parentheses, or...
-(\\\|)  |                    # $3: Escaped OR pipe char, or...
-([^\\]*(?:\\[^()|][^\\]*)*)  # $4: Everything else.
+<pre class="regex re_x"># re_escapedgroupdelims: Convert escaped group delimiter chars to HTML entities.
+( [^\\]+(?:\\[^()|][^\\]*)*   # $1: Everything else (starting with non-escape),
+|       (?:\\[^()|][^\\]*)+   #  or everything else (starting with escape).
+)                             # End $1.
+| (\\\()                      # or $2: "\(" Escaped left parentheses.
+| (\\\))                      # or $3: "\)" Escaped right parentheses.
+| (\\\|)                      # or $4: "\|" Escaped OR pipe char.
 </pre>
 
-<pre class="regex">/(\\\()|(\\\))|(\\\|)|([^\\]*(?:\\[^()|][^\\]*)*)/g;</pre>
+<pre class="regex">/([^\\]+(?:\\[^()|][^\\]*)*|(?:\\[^()|][^\\]*)+)|(\\\()|(\\\))|(\\\|)/g;</pre>
 
 <pre class="regex re_x"># Example pseudo-regex demonstrating all recognized PCRE component types.
 
@@ -238,7 +246,11 @@
 (?(?&lt;=...)...)   # assertion condition (positive lookbehind)
 (?(?&lt;!...)...)   # assertion condition (negative lookbehind)
 
-(?# ERROR CONDITION)
+(?# MISCELLANEOUS TESTS)
+[  (   )   | ]   # unescaped group delimiters inside char class
+[ \(  \)  \| ]   # escaped group delimiters inside char class
+( \(  \)  \| )   # escaped group delimiters inside group
+  \(  \)  \|     # escaped group delimiters outside
 ) ) ( (          # unbalanced parentheses
 </pre>
 </div>

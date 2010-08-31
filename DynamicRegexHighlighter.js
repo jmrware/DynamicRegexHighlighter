@@ -1,6 +1,6 @@
 /* <![CDATA[ */
 /* File:		DynamicRegexHighlighter.js
- * Version:		20100830_1600
+ * Version:		20100831_1400
  * Copyright:	(c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License:	http://www.opensource.org/licenses/mit-license.php
  *
@@ -24,52 +24,38 @@ reHighlightElement = function (elem) {
 	var grp_cnt = 0;		// (?: PCRE groups).
 	var brgrp_cnt = 0;		// (?|(branch)|(reset)) groups.
 	var capgrp_cnt = 0;		// (capture groups).
+	var span;				// Current DOM span node.
+	var title;				// Current node's title attribute.
+	var sibs;				// Array of sibling span nodes.
+	var str;				// Temp string.
+	var el;					// Temp node element.
 // Phase 1: - Mark character classes, comments and comment groups
 //	 and hide their parentheses and pipe symbols as HTML entities.
-	var re_1_cmt = /(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\(\?#[^)]*\))|(\((?!\?#))|(#.*)|([^[(#\\]*(?:\\[\S\s][^[(#\\]*)*)/g;
-	var callback1_cmt = function(m0, m1, m2, m3, m4, m5, m6, m7) {
-		if (m1) {	// Groups 1,2,3: [character class], contents and quantifier.
+	var re_1_cmt = /([^[(#\\]+(?:\\[\S\s][^[(#\\]*)*|(?:\\[\S\s][^[(#\\]*)+)|(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|(#.*)/g;
+	var re_1_nocmt = /([^[(\\]+(?:\\[\S\s][^[(\\]*)*|(?:\\[\S\s][^[(\\]*)+)|(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))/g;
+	var callback1 = function(m0, m1, m2, m3, m4, m5, m6, m7) {
+		if (m1) return reHideEscapedGroupDelims(m1); // Group 1: Everything else.
+		if (m2) { // Groups 2,3,4: [character class], contents and quantifier.
 			++cc_cnt;
-			m2 = reHideGroupDelims(m2);
-			return '<span title="c' + cc_cnt + '">' + m1 + '<\/span>' + m2 + '<span title="c' + cc_cnt + '">]' + m3 + '<\/span>';
+			m3 = reHideGroupDelims(m3);
+			return '<span title="c' + cc_cnt + '">' + m2 + '<\/span>' + m3 + '<span title="c' + cc_cnt + '">]' + m4 + '<\/span>';
 		}
-		if (m4) {	// Group 4: (?# comment group).
+		if (m5) return m5;	// Group 5: Opening "(" (non comment group).
+		if (m6) {			// Group 6: (?# comment group).
 			++cmtgrp_cnt;
-			m4 = reHideGroupDelims(m4);
-			return '<span title="n' + cmtgrp_cnt + '">' + m4 + '<\/span>';
-		}
-		if (m5) {	// Group 5: Non-comment group opening (.
-			return m5;
-		}
-		if (m6) {	// Group 6: # comment.
-			++cmt_cnt;
 			m6 = reHideGroupDelims(m6);
-			return '<span title="m' + cmt_cnt + '">' + m6 + '<\/span>';
+			return '<span title="n' + cmtgrp_cnt + '">' + m6 + '<\/span>';
 		}
-		if (m7) return reHideEscapedGroupDelims(m7); // Group 7: Everything else.
-		return '';
-	};
-	var re_1_nocmt = /(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\(\?#[^)]*\))|(\((?!\?#))|([^[(\\]*(?:\\[\S\s][^[(\\]*)*)/g;
-	var callback1_nocmt = function(m0, m1, m2, m3, m4, m5, m6) {
-		if (m1) {	// Groups 1,2,3: [character class], contents and quantifier.
-			++cc_cnt;
-			m2 = reHideGroupDelims(m2);
-			return '<span title="c' + cc_cnt + '">' + m1 + '<\/span>' + m2 + '<span title="c' + cc_cnt + '">]' + m3 + '<\/span>';
+		if (m7) {			// Group 7: # comment.
+			++cmt_cnt;
+			m7 = reHideGroupDelims(m7);
+			return '<span title="m' + cmt_cnt + '">' + m7 + '<\/span>';
 		}
-		if (m4) {	// Group 4: (?# comment group).
-			++cmtgrp_cnt;
-			m4 = reHideGroupDelims(m4);
-			return '<span title="n' + cmtgrp_cnt + '">' + m4 + '<\/span>';
-		}
-		if (m5) {	// Group 5: Non-comment group opening (.
-			return m5;
-		}
-		if (m6) return reHideEscapedGroupDelims(m6); // Group 6: Everything else.
 		return '';
 	};
 // Phase 2: - Mark matching parentheses and pipe OR symbols from inside out
 //	 and hide their parentheses and pipe symbols as HTML entities.
-	var re_2 = /\((\?(?:[:|>=!]|&gt;|&lt;[=!]|<[=!]|P?&lt;\w+&gt;|P?<\w+>|'\w+'|(?=<span[^>]*>&#40;)|\((?:[+\-]?\d+|&lt;\w+&gt;|<\w+>|'\w+'|\w+|R&amp;\w+|R&\w+)\)|(?:R|(?:-?[iJmsUx])+|[+\-]?\d+|&amp;\w+|&\w+|P&gt;\w+|P>\w+|P=\w+)(?=\))))?([^()]*)\)((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)/g;
+	var re_2 = /\((\?(?:[:|>=!]|&gt;|&lt;[=!]|<[=!]|P?&lt;\w+&gt;|P?<\w+>|'\w+'|(?=<span[^>]*>&#40;)|\((?:[+\-]?\d+|&lt;\w+&gt;|<\w+>|'\w+'|R&amp;\w+|R&\w+|\w+)\)|(?:R|(?:-?[iJmsUx])+|[+\-]?\d+|&amp;\w+|&\w+|P&gt;\w+|P>\w+|P=\w+)(?=\))))?([^()]*)\)((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)/g;
 	var callback2 = function(m0, m1, m2, m3) {
 		var gtype;	// "bnn", "gnn", or "pnn".
 		if (m1) {	// Non-zero for special group types.
@@ -86,8 +72,8 @@ reHighlightElement = function (elem) {
 			gtype = "p" + capgrp_cnt;
 			m1 = "";
 		}
-		m2 = m2.replace(/\|/g,	// Mark & hide ORs (between | parentheses).
-			function() { return '<span title="' + gtype + '">&#124;<\/span>'; } );
+		str = '<span title="' + gtype + '">&#124;<\/span>';
+		m2 = m2.replace(/\|/g, str); // Mark & hide ORs (between | parentheses).
 		return '<span title="' + gtype + '">&#40;' + m1 + '<\/span>' + m2 + '<span title="' + gtype + '">&#41;' + m3 + '<\/span>';
 	};
 // Process DOM element having class: "regex" (and optionally "re_x").
@@ -95,22 +81,20 @@ reHighlightElement = function (elem) {
 	if (text.length === 0) return;
 	if (/<\w+\b[^>]*>/.test(text)) return;	// Already processed? Exit.
 	if (/\bre_x\b/.test(elem.className)) {	// Phase 1.
-		text = text.replace(re_1_cmt, callback1_cmt);
+		text = text.replace(re_1_cmt, callback1);
 	} else {
-		text = text.replace(re_1_nocmt, callback1_nocmt);
+		text = text.replace(re_1_nocmt, callback1);
 	}
 	while (text.search(re_2) != -1) {	// Phase 2.
 		text = text.replace(re_2, callback2);
 	}
 	// Markup global/outermost | OR alternatives.
-	text = text.replace(/\|/g,
-		function() {return '<span title="o">&#124;<\/span>';});
+	text = text.replace(/\|/g, '<span title="o">&#124;<\/span>');
 	// Any parentheses left at this point represent errors.
 	text = text.replace(/([()])/g, '<span class="regex_err" title="e">$1<\/span>');
 	// Reflow the document with the new markup.
 	elem = rePutElemContents(elem, text); // This is a bit tricky.
 // Phase 3: add mouse event highlighting handlers.
-	var span, title, sibs, re, el, str;
 	capgrp_cnt = 0;	// Reset capture group number.
 	brgrp_cnt = 0;	// Reset branch reset group count.
 	var spans = elem.getElementsByTagName('span');
@@ -120,10 +104,9 @@ reHighlightElement = function (elem) {
 		if (!span.sibs) {
 			sibs = []; // Gather array of all sibling spans.
 			title = span.title;
-			re = RegExp("\\b" + title + "\\b", "i");
 			for (var j = 0; j < span_cnt; j++) {
 				el = spans[j];
-				if (!el.sibs && re.test(el.title)) {
+				if (!el.sibs && el.title == title) {
 					sibs.push(el);
 				}
 			}
@@ -134,9 +117,9 @@ reHighlightElement = function (elem) {
 				el.onmouseover = reOnMouseover;
 				el.onmouseout  = reOnMouseout;
 			}
-			if (title.indexOf("b") === 0) {
+			if (title.charAt(0) == "b") {
 				brgrp_cnt++;
-			} else if (title.indexOf("p") === 0) {
+			} else if (title.charAt(0) == "p") {
 				capgrp_cnt++;
 				str = "Capture group";
 				// If there are no (?|(branch)(reset)) groups yet, then
@@ -152,19 +135,18 @@ reHighlightElement = function (elem) {
 			}
 		}
 	}
-	span = null; sibs = null; el = null; spans = null;
-	elem = null;
+	sibs = null;
 };
 function reHideGroupDelims(text) {
 	return text.replace(/\(/g, '&#40;').replace(/\)/g, '&#41;').replace(/\|/g, '&#124;');
 }
 function reHideEscapedGroupDelims(text) {
-	return text.replace(/(\\\()|(\\\))|(\\\|)|([^\\]*(?:\\[^()|][^\\]*)*)/g,
+	return text.replace(/([^\\]+(?:\\[^()|][^\\]*)*|(?:\\[^()|][^\\]*)+)|(\\\()|(\\\))|(\\\|)/g,
 		function (m0, m1, m2, m3, m4) {
-			if (m1) return '\\&#40;';
-			if (m2) return '\\&#41;';
-			if (m3) return '\\&#124;';
-			return m4;
+			if (m1) return m1;
+			if (m2) return '\\&#40;';
+			if (m3) return '\\&#41;';
+			if (m4) return '\\&#124;';
 		} );
 }
 rePutElemContents = function (elem, text) {
@@ -224,7 +206,6 @@ function reGetElemsByKlassName(base_el, kl) {
 			kl_els.push(el);
 		}
 	}
-	el = null; elems = null;
 	return kl_els;
 }
 function rePrepareAllMarkup() {
@@ -259,7 +240,7 @@ function reOnunload() {
 			span.onmouseout = null;
 		}
 	}
-	spans = null; span = null; re_elems = null;
+	re_elems = null;
 }
 reAddLoadEvent = function (newf) {
 	if (typeof(window.onload) != 'function') {
