@@ -1,6 +1,6 @@
 /* <![CDATA[ */
 /* File:		DynamicRegexHighlighter.js
- * Version:		20100831_1400
+ * Version:		20100831_1800
  * Copyright:	(c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License:	http://www.opensource.org/licenses/mit-license.php
  *
@@ -34,7 +34,15 @@ reHighlightElement = function (elem) {
 	var re_1_cmt = /([^[(#\\]+(?:\\[\S\s][^[(#\\]*)*|(?:\\[\S\s][^[(#\\]*)+)|(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|(#.*)/g;
 	var re_1_nocmt = /([^[(\\]+(?:\\[\S\s][^[(\\]*)*|(?:\\[\S\s][^[(\\]*)+)|(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))/g;
 	var callback1 = function(m0, m1, m2, m3, m4, m5, m6, m7) {
-		if (m1) return reHideEscapedGroupDelims(m1); // Group 1: Everything else.
+		if (m1) { // Group 1: Everything other than char classes, comments and comment groups.
+			return m1.replace(/([^\\]+(?:\\[^()|][^\\]*)*|(?:\\[^()|][^\\]*)+)|(\\\()|(\\\))|(\\\|)/g,
+				function (m0, m1, m2, m3, m4) {
+					if (m1) return m1;
+					if (m2) return '\\&#40;';
+					if (m3) return '\\&#41;';
+					if (m4) return '\\&#124;';
+				} );
+		}
 		if (m2) { // Groups 2,3,4: [character class], contents and quantifier.
 			++cc_cnt;
 			m3 = reHideGroupDelims(m3);
@@ -140,15 +148,6 @@ reHighlightElement = function (elem) {
 function reHideGroupDelims(text) {
 	return text.replace(/\(/g, '&#40;').replace(/\)/g, '&#41;').replace(/\|/g, '&#124;');
 }
-function reHideEscapedGroupDelims(text) {
-	return text.replace(/([^\\]+(?:\\[^()|][^\\]*)*|(?:\\[^()|][^\\]*)+)|(\\\()|(\\\))|(\\\|)/g,
-		function (m0, m1, m2, m3, m4) {
-			if (m1) return m1;
-			if (m2) return '\\&#40;';
-			if (m3) return '\\&#41;';
-			if (m4) return '\\&#124;';
-		} );
-}
 rePutElemContents = function (elem, text) {
 	if (navigator.userAgent.indexOf('MSIE') != -1) { // IE.
 		// IE does not respect PRE's whitespace when using innerHTML.
@@ -171,6 +170,7 @@ rePutElemContents = function (elem, text) {
 			elem.innerHTML = text;	// IE non PRE.
 		}
 	} else { // Not IE.
+		// See: http://blog.stevenlevithan.com/archives/faster-than-innerhtml
 		var el_new = elem.cloneNode(false);
 		el_new.innerHTML = text;
 		elem.parentNode.replaceChild(el_new, elem);

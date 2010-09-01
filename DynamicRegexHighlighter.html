@@ -3,9 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Dynamic Regex Highlighting with Javascript! (rev:20100831_1400)</title>
+<title>Dynamic Regex Highlighting with Javascript! (rev:20100831_1800)</title>
 <meta name="author" content="Jeff Roberson" />
-<meta name="version" content="20100831_1400" />
+<meta name="version" content="20100831_1800" />
 <meta name="licence" content="MIT" />
 <style type="text/css" media="screen">
     body {margin: 2em; color:#333; background:#DDB;}
@@ -30,7 +30,7 @@
 <ol>
     <li>Add a script tag to the document head element to include: <tt>DynamicRegexHighlighter.js</tt>.<br />e.g. <tt style="color: #080;">&lt;script type="text/javascript" src="DynamicRegexHighlighter.js"&gt;&lt;/script&gt;</tt></li>
     <li>Add a <tt>.regex_hl</tt> class selector to the stylesheet to define what the highlighted regex text should look like. To show unbalanced parentheses as visible errors, add a <tt>.regex_err</tt> class selector to the stylesheet before the <tt>.regex_hl</tt> rule.<br />e.g. <tt style="color: #080;">&lt;style type="text/css"&gt;.regex_err {color: #FFF; background-color: #F00;}<br />.regex_hl {color: #333; background-color: #0F0;}&lt;/style&gt;</tt></li>
-    <li>Wrap the regex to be highlighted in an element having <tt>class="regex"</tt>. There must be no other HTML tags embedded within the regex text. The regular expression should be valid and in <em title="i.e. Extra backslashes may confuse the script">native regex format</em> and should have all "<tt>&lt;</tt>", "<tt>&gt;</tt>" and "<tt>&amp;</tt>" characters converted to HTML entities, so that the web page is valid. If the regex is written in free-spacing mode with <tt>#comments</tt> and defined whitespace indentation (i.e. with Perl syntax "x" modifier set), add "<tt>re_x</tt>" to the class, and wrap it in a <tt>PRE</tt> tag (to preserve whitespace for IE).<br />e.g. <tt class="regex" style="color: #080;">&lt;h1 class="regex"&gt;Dynamic (?:Regex Highlighting)++ with Javascript!&lt;/h1"&gt;</tt><br />e.g. <tt style="color: #080;">&lt;pre class="regex re_x"&gt;<span class="regex re_x">Regex with #comments here.</span>&lt;/pre"&gt;</tt></li>
+    <li>Wrap the regex to be highlighted in an element having <tt>class="regex"</tt>. There must be no other HTML tags embedded within the regex text. The regular expression should be valid and in <em title="i.e. Extra backslashes may confuse the script">native regex format</em> and should have all "<tt>&lt;</tt>", "<tt>&gt;</tt>" and "<tt>&amp;</tt>" characters converted to HTML entities, so that the web page is valid. If the regex is written in free-spacing mode with <tt>#comments</tt> and defined whitespace indentation (i.e. with Perl syntax "x" modifier set), add "<tt>re_x</tt>" to the class, and wrap it in a <tt>PRE</tt> tag (to preserve whitespace for IE).<br />e.g. <tt class="regex" style="color: #080;">&lt;h1 class="regex"&gt;Dynamic (?:Regex Highlighting)++ with Javascript!&lt;/h1"&gt;</tt><br />e.g. <tt style="color: #080;">&lt;pre class="regex re_x"&gt;<span class="regex re_x">Free spacing ("x" mode) regex with #comments here.</span>&lt;/pre"&gt;</tt></li>
 </ol>
 
 <p>Following are all the regexes from the <tt>DynamicRegexHighlighter.js</tt> script. First up is the Phase 1 regex used to parse regexes having commenting turned on (i.e. regexes with the Perl style "x" modifier set). The first listing is this regex in verbose format with a liberal sprinkling of comments and indentation for clarity.</p>
@@ -135,12 +135,12 @@
 ([^()]*)\)((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)/g;</pre>
 
 <pre class="regex re_x"># re_escapedgroupdelims: Convert escaped group delimiter chars to HTML entities.
-( [^\\]+(?:\\[^()|][^\\]*)*   # $1: Everything else (starting with non-escape),
-|       (?:\\[^()|][^\\]*)+   #  or everything else (starting with escape).
-)                             # End $1.
-| (\\\()                      # or $2: "\(" Escaped left parentheses.
-| (\\\))                      # or $3: "\)" Escaped right parentheses.
-| (\\\|)                      # or $4: "\|" Escaped OR pipe char.
+  ( [^\\]+(?:\\[^()|][^\\]*)*  # $1: Everything else (starting with non-escape),
+  |       (?:\\[^()|][^\\]*)+  #  or everything else (starting with escape).
+  )                            # End $1.
+| (\\\()                       # or $2: "\(" Escaped left parentheses.
+| (\\\))                       # or $3: "\)" Escaped right parentheses.
+| (\\\|)                       # or $4: "\|" Escaped OR pipe char.
 </pre>
 
 <pre class="regex">/([^\\]+(?:\\[^()|][^\\]*)*|(?:\\[^()|][^\\]*)+)|(\\\()|(\\\))|(\\\|)/g;</pre>
