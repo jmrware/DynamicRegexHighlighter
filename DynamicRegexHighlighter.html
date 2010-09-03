@@ -3,9 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Dynamic Regex Highlighting with Javascript! (Rev:20100903_0700)</title>
+<title>Dynamic Regex Highlighting with Javascript! (Rev:20100903_1300)</title>
 <meta name="author" content="Jeff Roberson" />
-<meta name="version" content="20100903_0700" />
+<meta name="version" content="20100903_1300" />
 <meta name="licence" content="MIT" />
 <script type="text/javascript" src="DynamicRegexHighlighter.js"></script>
 <!-- To add regex syntax colorizing to this page, get jsresyntaxhighlighter.js and
@@ -31,21 +31,17 @@ Copy both to this file's folder then uncomment the following three tag elements.
 <h1 class="regex_x">Dynamic (?:Regex Highlighting)++ with Javascript!</h1>
 <p id="headerlinks">Interactive tester: <a title="This page allows you to test the highlighter with your own regular expressions" href="DynamicRegexHighlighterTester.html">DynamicRegexHighlighterTester.html</a>.</p>
 <p>This page demonstrates, documents and tests the Javascript dynamic regex highlighter script: <tt><a title="Download latest version from Github repository" href="http://github.com/jmrware/DynamicRegexHighlighter/">DynamicRegexHighlighter.js</a></tt>. To see the highlighting in action, place the mouse cursor over the various parts of the regular expressions below. The components which are highlighted include: matching character class delimiters (and any quantifiers), comments, comment groups and matching (possibly nested) group delimiters (and their quantifiers). When moused over, these regex components are highlighted in <span class="regex_hl">DARK GRAY</span> (or more precisely, in whatever style is defined by the CSS class: <tt>.regex_hl</tt>). The script identifies erroneous unbalanced parentheses and these are displayed as <span class="regex_err">RED</span> (or more precisely, in whatever style is defined by the CSS class: <tt>.regex_err</tt>). When the mouse is placed over a numbered capturing group, a tooltip appears indicating the capture group number (e.g. "Capture group $3"). Note, however, that if the regex has a "branch reset" construct, <tt class="regex_x">(?|(like)|(this)|(one))</tt>, then the script is not smart enough to compute capture group numbers beyond that point. In this case, affected capture group numbers are simply not included in the tooltips.</p>
-
-
 <p>Each regular expression from the script is presented below in two formats: 1.) fully commented in free-spacing format, and 2.) uncommented in native Javascript format. Additionally, an extended example pseudo regex is provided which tests the various <a title="The Perl Compatible Regular Expression library" href="http://www.pcre.org/">PCRE</a> regex constructs that this script recognizes. During the page load process, (which can take quite some time on pages that contain many large, highly complex regexes), progress information is displayed in the browser's status bar at the bottom of the page (if the browser is setup to allow this.) Once the page is loaded, the script is idle except for <tt>mouseover</tt> and <tt>mouseout</tt> events, which are handled very quickly. When the page is unloaded, the script once again comes back to life to free up the memory it allocated and to null out all its references to DOM node objects (to prevent nefarious memory leaks that happen in IE if you don't).</p>
-
 <h2 class="regex_x">Usage: (easy as one two three!)</h2>
 <ol>
     <li>Add a script tag to the document head element to include: <tt>DynamicRegexHighlighter.js</tt>.<br />e.g. <tt style="color: #080;">&lt;script type="text/javascript" src="DynamicRegexHighlighter.js"&gt;&lt;/script&gt;</tt></li>
-    <li>Add a <tt>.regex_hl</tt> class selector to the stylesheet to define what the highlighted regex text should look like. To show unbalanced parentheses as visible errors, add a <tt>.regex_err</tt> class selector to the stylesheet before the <tt>.regex_hl</tt> rule.<br />e.g. <tt style="color: #080;">&lt;style type="text/css"&gt;.regex_err {color: #FFF; background-color: #F00;}<br />.regex_hl {color: #333; background-color: #0F0;}&lt;/style&gt;</tt></li>
+    <li>Add a <tt>.regex_hl</tt> class selector to the stylesheet to define what the highlighted regex text should look like. To show unbalanced parentheses as visible errors, add a <tt>.regex_err</tt> class selector to the stylesheet before the <tt>.regex_hl</tt> rule.<br />e.g. <tt style="color: #080;">&lt;style type="text/css"&gt;.regex_err {color: #FFF; background-color: #F00;}<br />.regex_hl {color: #EEE; background-color: #444;}&lt;/style&gt;</tt></li>
     <li>Wrap the regex to be highlighted in an element having either <tt>class="regex"</tt> or  <tt>class="regex_x"</tt>. The regular expression should be valid and in <em title="i.e. Extra backslashes may confuse the script">native regex format</em> and should have all "<tt>&lt;</tt>", "<tt>&gt;</tt>" and "<tt>&amp;</tt>" characters converted to HTML entities, so that the web page is valid. If the regex is written in free-spacing mode with <tt>#comments</tt> (i.e. with Perl syntax "x" modifier set), use the "<tt>.regex_x</tt>" class variation, and wrap it in a <tt>PRE</tt> tag (to preserve whitespace for IE).<br />e.g. <tt class="regex_x" style="color: #080;">&lt;h1 class="regex"&gt;Dynamic (?:Regex Highlighting)++ with Javascript!&lt;/h1"&gt;</tt><br />e.g. <tt style="color: #080;">&lt;pre class="regex_x"&gt;<span class="regex_x">Free spacing ("x" mode) regex with #comments here.</span>&lt;/pre"&gt;</tt></li>
 </ol>
-
 <p>Following are all the regexes from the <tt>DynamicRegexHighlighter.js</tt> script. First up is the Phase 1 regex used to parse regexes having commenting turned on (i.e. regexes with the Perl style "x" modifier set). The first listing is this regex in verbose format with a liberal sprinkling of comments and indentation for clarity.</p>
 <pre class="regex_x" id="n1"># re_1_cmt: Match character classes, comment groups, HTML tags, and comments.
   ( [^[(#&lt;\\]+(?:\\[\S\s][^[(#&lt;\\]*)*     # $1: Everything else (starting w/non-escape)
-  |           (?:\\[\S\s][^[(&lt;#\\]*)+     #  or everything else (starting w/escape).
+  |           (?:\\[\S\s][^[(#&lt;\\]*)+     #  or everything else (starting w/escape).
   )                                       # End $1.
 | (\[\^?)                                 # $2: Character class opening delim.
   (                                       # $3: Character class contents.
@@ -61,18 +57,16 @@ Copy both to this file's folder then uncomment the following three tag elements.
   ((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)  # $5: Optional char class quantifier.
 | (\((?!\?\#))                            # $6: Opening "(" (non comment group).
 | (\(\?\#[^)]*\))                         # $7: Comment group (cmt_grp).
-| (&lt;/?\w+\b[^&gt;]*&gt;)                        # $8: Embedded HTML tag (open or close).
+| ((?:&lt;/?\w+\b[^&gt;]*&gt;)+)                   # $8: Embedded HTML tags (open or close).
 | (\#.*)                                  # $9: Comment (cmt).
 </pre>
-
 <p>Following is the exact same regex in its raw, uncommented native Javascript format as it appears in the script (with a few added newlines to avoid it going off screen).</p>
-<pre class="regex">var re_1_cmt = /([^[(#&lt;\\]+(?:\\[\S\s][^[(#&lt;\\]*)*|(?:\\[\S\s][^[(&lt;#\\]*)+)|
+<pre class="regex">var re_1_cmt = /([^[(#&lt;\\]+(?:\\[\S\s][^[(#&lt;\\]*)*|(?:\\[\S\s][^[(#&lt;\\]*)+)|
 (\[\^?)(\]?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*(?:\[(?::\^?\w+:\])?[^[\]\\]*
 (?:\\[\S\s][^[\]\\]*)*)*)\]((?:&lt;\/?\w+\b[^&gt;]*&gt;)*)((?:(?:[?*+]|\{\d+(?:,\d*)?
-\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|(&lt;\/?\w+\b[^&gt;]*&gt;)|(#.*)/g;</pre>
+\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|((?:&lt;\/?\w+\b[^&gt;]*&gt;)+)|(#.*)/g;</pre>
 
 <p>Following, are the remaining regular expressions from the script in both commented and non-commented formats. Happy regexing!</p>
-
 <pre class="regex_x"># re_1_nocmt: Match character classes, comment groups and HTML tags (no comments).
   ( [^[(&lt;\\]+(?:\\[\S\s][^[(&lt;\\]*)*       # $1: Everything else (starting w/non-escape)
   |          (?:\\[\S\s][^[(&lt;\\]*)+       #  or everything else (starting w/escape).
@@ -91,14 +85,12 @@ Copy both to this file's folder then uncomment the following three tag elements.
   ((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)  # $5: Optional char class quantifier.
 | (\((?!\?\#))                            # $6: Opening "(" (non comment group).
 | (\(\?\#[^)]*\))                         # $7: Comment group (cmt_grp).
-| (&lt;/?\w+\b[^&gt;]*&gt;)                        # $8: Embedded HTML tag (open or close).
+| ((?:&lt;/?\w+\b[^&gt;]*&gt;)+)                   # $8: Embedded HTML tags (open or close).
 </pre>
-
 <pre class="regex">var re_1_nocmt = /([^[(&lt;\\]+(?:\\[\S\s][^[(&lt;\\]*)*|(?:\\[\S\s][^[(&lt;\\]*)+)|
 (\[\^?)(\]?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*(?:\[(?::\^?\w+:\])?[^[\]\\]*
 (?:\\[\S\s][^[\]\\]*)*)*)\]((?:&lt;\/?\w+\b[^&gt;]*&gt;)*)((?:(?:[?*+]|\{\d+(?:,\d*)?
-\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|(&lt;\/?\w+\b[^&gt;]*&gt;)/g;</pre>
-
+\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|((?:&lt;\/?\w+\b[^&gt;]*&gt;)+)/g;</pre>
 <pre class="regex_x"># re_2: Match inner (non-nested) PCRE syntax regex groups.
 \(                         # Regex group opening "(" delimiter.
 (                          # $1: Optional group type specification.
@@ -140,7 +132,6 @@ Copy both to this file's folder then uncomment the following three tag elements.
 ((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)  # $4: Optional quantifier.
 # Note 1: Handle "&lt;", "&gt;" and "&amp;", even if not converted to HTML entities.
 </pre>
-
 <pre class="regex">var re_2 = /\((\?(?:[:|&gt;=!]|&amp;gt;|&amp;lt;[=!]|&lt;[=!]|P?&amp;lt;\w+&amp;gt;|P?&lt;\w+&gt;|'\w+'|
 (?=&lt;span[^&gt;]*&gt;&amp;#40;)|\((?:[+\-]?\d+|&amp;lt;\w+&amp;gt;|&lt;\w+&gt;|'\w+'|R&amp;amp;\w+|R&amp;\w+|\w+)
 \)|(?:R|(?:-?[iJmsUx])+|[+\-]?\d+|&amp;amp;\w+|&amp;\w+|P&amp;gt;\w+|P&gt;\w+|P=\w+)(?=\))))?
@@ -152,9 +143,7 @@ Copy both to this file's folder then uncomment the following three tag elements.
   )                            # End $1.
 | (\\[()|])                    # $2: Escaped "(", ")" or "|".
 </pre>
-
 <pre class="regex">/([^\\]+(?:\\[^()|][^\\]*)*|(?:\\[^()|][^\\]*)+)|(\\[()|])/g</pre>
-
 <pre class="regex_x"># Example pseudo-regex demonstrating all recognized PCRE component types.
 
 (?# CHARACTER CLASSES)
@@ -257,7 +246,7 @@ Copy both to this file's folder then uncomment the following three tag elements.
 (?(?&lt;!...)...)   # assertion condition (negative lookbehind)
 
 (?# MISCELLANEOUS TESTS)
-# test HTML tags having "(", ")" and "|" group delimiter chars in attribute values.
+# test HTML tags having "()|[]" delimiter chars in attribute values.
 <b title="Title attribute (with | [regex] | delims) in open regex)">HTML TAG</b>            # in open regex
 (?# <b title="Title attribute (with | [regex] | delims) in (?#comment group)">HTML TAG</b>)       # in comment group
 # <b title="Title attribute (with | [regex] | delims) in # comment">HTML TAG</b>          # in comment
@@ -294,5 +283,15 @@ Copy both to this file's folder then uncomment the following three tag elements.
   \(  \)  \|     # escaped group delimiters outside
 ) ) ( (          # unbalanced parentheses
 </pre>
+<h2>Notes and limitations.</h2>
+<ul>
+    <li>During Phase 1 processing, the <tt>re_1</tt> regex will match (invalid) empty character classes. (i.e. <tt class="regex_x">/[]/</tt> or <tt class="regex_x">/[^]/</tt>). It is best to use only valid regexes.</li>
+    <li>HTML tags having the "&gt;" character anywhere in any attribute value may cause erroneous regex parsing. This problem should be rare and is easily avoided.</li>
+    <li>The HTML document should not have any element having <tt>id="xREx"</tt> as this may cause an error during parsing when running Internet Explorer. This problem should be very rare and is easily avoided.</li>
+    <li>Firefox 2 refuses to break up very long words and will display them as one very long line (with a horizontal scroll bar). It is best to add some line breaks to long regexes.</li>
+    <li>The default dynamic highlighting colors for the <tt>.regex_hl</tt> style (i.e. <span class="regex_hl">dark gray</span>) were chosen to provide excellent contrast to stand out when used in conjunction with color syntax highlighting. If color syntax highlighting is not being used, a more subtle and pleasing color such as <span style="color: #333; background-color: #0F0;">this one</span> or <span style="color: #333; background-color: #0FF;">this one</span> may be preferable.</li>
+    <li>When using the interactive tester, it is important to choose the correct value for the <em>Perl "x" free spacing mode</em> checkbox option. If you fail to check this option for regexes having #comments, the parser will get confused if there are any unbalanced metacharacters within the comments (and may (erroneously) report unbalanced parentheses).</li>
+    <li>When using the color syntax highlighting option, remember that the colorization script is designed to only handle regexes written in the Javascript regex flavor (i.e. no lookbehind, possessive quantifiers, named capture groups, atomic grouping, etc.) But most importantly, the Javascript flavor does not allow comments. For this reason, the interactive tester will not allow you to select both the "x" flag option and the color option at the same time.</li>
+</ul>
 </div>
 </body></html>

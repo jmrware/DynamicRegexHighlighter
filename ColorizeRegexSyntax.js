@@ -1,6 +1,6 @@
 /* <![CDATA[ */
 /* File:		ColorizeRegexSyntax.js
- * Version:		20100903_0700
+ * Version:		20100903_1300
  * Copyright:	(c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License:	http://www.opensource.org/licenses/mit-license.php
  *
@@ -10,7 +10,6 @@
  * script. This script calls the highlightJsReSyntax() function
  * within the jsresyntaxhighlighter.js script for all elements
  * on a page having class="regex" to colorize their regex syntax.
- * This allows for both colorizing and dynamic regex highlighting.
  * A sentence is added to the header link paragraph (id="headerlinks")
  * giving credit and a link to Steven's regex highlighter blog page.
  * If there is an element with id="regex_form_submit", then a new

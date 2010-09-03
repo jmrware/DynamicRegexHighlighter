@@ -3,9 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Dynamic Regex Highlighting Tester  (Rev:20100903_0700)</title>
+<title>Dynamic Regex Highlighting Tester  (Rev:20100903_1300)</title>
 <meta name="author" content="Jeff Roberson" />
-<meta name="version" content="20100903_0700" />
+<meta name="version" content="20100903_1300" />
 <meta name="licence" content="MIT" />
 <style type="text/css" media="screen">
     body {margin: 2em; color:#333; background:#DDB;}
@@ -31,8 +31,8 @@ Copy both to this file's folder then uncomment the following three tag elements.
 /* Read textarea input, write to output elem and prepare regex highlighting */
 function handleOnclick() {  // This takes over the form submit button event.
     var input, output, x_flag, text, c_flag;    // Our local variables.
-    if (!window.reHighlightElement ||	// This requires DynamicRegexHighlighter.js.
-    	!document.getElementById) return false;	// and non-brain-dead browser.
+    if (!window.reHighlightElement ||   // This requires DynamicRegexHighlighter.js.
+        !document.getElementById) return false; // and non-brain-dead browser.
     input  = document.getElementById('input');  // Input textarea form element.
     output = document.getElementById('output'); // Output PRE element.
     x_flag = document.getElementById('cb_x');   // "x" flag form checkbox.
@@ -69,10 +69,10 @@ function handleOnclick() {  // This takes over the form submit button event.
 <form action="" method="get">
     <p>Enter a regex. Choose <input title="Incorrect selection may result in wrongly identified errors." id="cb_x" type="checkbox" name="cb_x" /> Perl "x" free spacing mode.
     <span id="regex_form_submit">Click: <input id="submit" type="submit" name="submit" value="submit" onclick="return handleOnclick();"/></span></p>
-    <p><textarea id="input" name="input" rows="10" cols="80">var re_1_cmt = /([^[(#&lt;\\]+(?:\\[\S\s][^[(#&lt;\\]*)*|(?:\\[\S\s][^[(&lt;#\\]*)+)|
+    <p><textarea id="input" name="input" rows="10" cols="80">var re_1_cmt = /([^[(#&lt;\\]+(?:\\[\S\s][^[(#&lt;\\]*)*|(?:\\[\S\s][^[(#&lt;\\]*)+)|
 (\[\^?)(\]?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*(?:\[(?::\^?\w+:\])?[^[\]\\]*
 (?:\\[\S\s][^[\]\\]*)*)*)\]((?:&lt;\/?\w+\b[^&gt;]*&gt;)*)((?:(?:[?*+]|\{\d+(?:,\d*)?
-\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|(&lt;\/?\w+\b[^&gt;]*&gt;)|(#.*)/g;</textarea></p>
+\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|((?:&lt;\/?\w+\b[^&gt;]*&gt;)+)|(#.*)/g;</textarea></p>
     <pre class="regex" id="output">Dynamically highlightable regex appears here</pre>
 </form>
 </div>
