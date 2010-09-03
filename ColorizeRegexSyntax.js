@@ -1,10 +1,13 @@
 /* <![CDATA[ */
 /* File:		ColorizeRegexSyntax.js
- * Version:		20100902_2100
+ * Version:		20100903_0700
  * Copyright:	(c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License:	http://www.opensource.org/licenses/mit-license.php
  *
- * Summary: This script calls the highlightJsReSyntax() function
+ * Summary: This script is called by the documentation and tester
+ * HTML pages to allow the DynamicRegegHighlighter.js script to
+ * work together with Steven Levithan's regex syntax colorizer
+ * script. This script calls the highlightJsReSyntax() function
  * within the jsresyntaxhighlighter.js script for all elements
  * on a page having class="regex" to colorize their regex syntax.
  * This allows for both colorizing and dynamic regex highlighting.
@@ -47,8 +50,9 @@
 		}
 	}
 	// Delay running the above function until after the page is loaded.
-	if (reGetElemsByKlassNames && rePutElemContents && reAddLoadEventFirst &&
-		document.getElementById && highlightJsReSyntax) {
+	if (document.getElementById &&		// Continue loading only if not a braindead browser and
+		window.rePutElemContents &&		// the DynamicRegexHighlighter.js script is loaded and
+		window.highlightJsReSyntax) {	// the jsresyntaxhighlighter.js script is also loaded.
 		reAddLoadEventFirst(reColorizeAll); // This must run before
 	} // DynamicRegexHighlighter's reOnload() initialization function.
 })();

@@ -1,6 +1,6 @@
 /* <![CDATA[ */
 /* File:		DynamicRegexHighlighter.js
- * Version:		20100902_2100
+ * Version:		20100903_0700
  * Copyright:	(c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License:	http://www.opensource.org/licenses/mit-license.php
  *
@@ -110,7 +110,7 @@ reHighlightElement = function (elem) {
 	};
 // Process DOM element having class: "regex" or "regex_x".
 	var text = elem.innerHTML;
-	if (text.length === 0) return;
+	if (text.length === 0) return elem;
 	// Hide all regex delimiters within any HTML opening tag attribute values.
 	text = text.replace(/<\w+\b[^>]+>/g, reHideDelims);
 	if (/\bregex_x\b/.test(elem.className)) {	// Phase 1.
@@ -169,6 +169,7 @@ reHighlightElement = function (elem) {
 		}
 	}
 	sibs = null;
+	return elem;
 };
 rePutElemContents = function (elem, text) {
 	if (navigator.userAgent.indexOf('MSIE') != -1) { // IE.

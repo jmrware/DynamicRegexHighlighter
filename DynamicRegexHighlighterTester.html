@@ -3,9 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Dynamic Regex Highlighting Tester  (Rev:20100902_2100)</title>
+<title>Dynamic Regex Highlighting Tester  (Rev:20100903_0700)</title>
 <meta name="author" content="Jeff Roberson" />
-<meta name="version" content="20100902_2100" />
+<meta name="version" content="20100903_0700" />
 <meta name="licence" content="MIT" />
 <style type="text/css" media="screen">
     body {margin: 2em; color:#333; background:#DDB;}
@@ -31,7 +31,8 @@ Copy both to this file's folder then uncomment the following three tag elements.
 /* Read textarea input, write to output elem and prepare regex highlighting */
 function handleOnclick() {  // This takes over the form submit button event.
     var input, output, x_flag, text, c_flag;    // Our local variables.
-    if (!document.getElementById) return flase; // Braindead browser? Exit.
+    if (!window.reHighlightElement ||	// This requires DynamicRegexHighlighter.js.
+    	!document.getElementById) return false;	// and non-brain-dead browser.
     input  = document.getElementById('input');  // Input textarea form element.
     output = document.getElementById('output'); // Output PRE element.
     x_flag = document.getElementById('cb_x');   // "x" flag form checkbox.
@@ -55,7 +56,7 @@ function handleOnclick() {  // This takes over the form submit button event.
         } // Note that this adds a bunch of <b>, <i> and <u> tags to markup, which
     }     //  are properly handled (ignored) by rePutElemContents().
     output = rePutElemContents(output, text);   // Place (marked up) regex in container.
-    reHighlightElement(output); // Now sit back and let "Dynamic" Disco Stu do his thing...
+    output = reHighlightElement(output); // Now sit back and let Disco Stu do his thing...
     input = null; x_flag = null; c_flag = null; output = null; // Clean up node refs.
     return false;                               // Don't actually submit form.
 }
