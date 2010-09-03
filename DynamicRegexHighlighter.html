@@ -3,9 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Dynamic Regex Highlighting with Javascript! (Rev:20100902_1400)</title>
+<title>Dynamic Regex Highlighting with Javascript! (Rev:20100902_2100)</title>
 <meta name="author" content="Jeff Roberson" />
-<meta name="version" content="20100902_1400" />
+<meta name="version" content="20100902_2100" />
 <meta name="licence" content="MIT" />
 <script type="text/javascript" src="DynamicRegexHighlighter.js"></script>
 <!-- To add regex syntax colorizing to this page, get jsresyntaxhighlighter.js and
@@ -43,17 +43,17 @@ Copy both to this file's folder then uncomment the following three tag elements.
 </ol>
 
 <p>Following are all the regexes from the <tt>DynamicRegexHighlighter.js</tt> script. First up is the Phase 1 regex used to parse regexes having commenting turned on (i.e. regexes with the Perl style "x" modifier set). The first listing is this regex in verbose format with a liberal sprinkling of comments and indentation for clarity.</p>
-<pre class="regex_x" id="n1"># re_1_cmt: Match character classes comments groups, HTML tags, and comments.
+<pre class="regex_x" id="n1"># re_1_cmt: Match character classes, comment groups, HTML tags, and comments.
   ( [^[(#&lt;\\]+(?:\\[\S\s][^[(#&lt;\\]*)*     # $1: Everything else (starting w/non-escape)
   |           (?:\\[\S\s][^[(&lt;#\\]*)+     #  or everything else (starting w/escape).
   )                                       # End $1.
 | (\[\^?)                                 # $2: Character class opening delim.
   (                                       # $3: Character class contents.
     \]?                                   # Unescaped ] allowed if first char.
-    [^\][\\]*(?:\\[\S\s][^\][\\]*)*       # Non-[], escaped-anything (normal*).
+    [^[\]\\]*(?:\\[\S\s][^[\]\\]*)*       # Non-[], escaped-anything (normal*).
     (?: \[                                # Allow a non-escaped "[", and it
       (?::\^?\w+:\])?                     # may be embedded POSIX char class.
-      [^\][\\]*(?:\\[\S\s][^\][\\]*)*     # More non-[], escaped-anything.
+      [^[\]\\]*(?:\\[\S\s][^[\]\\]*)*     # More non-[], escaped-anything.
     )*                                    # Unroll-the-loop (special normal*)*
   )                                       # End $3. Character class contents.
   \]                                      # Character class closing delimiter.
@@ -67,23 +67,23 @@ Copy both to this file's folder then uncomment the following three tag elements.
 
 <p>Following is the exact same regex in its raw, uncommented native Javascript format as it appears in the script (with a few added newlines to avoid it going off screen).</p>
 <pre class="regex">var re_1_cmt = /([^[(#&lt;\\]+(?:\\[\S\s][^[(#&lt;\\]*)*|(?:\\[\S\s][^[(&lt;#\\]*)+)|
-(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*
-(?:\\[\S\s][^\][\\]*)*)*)\]((?:&lt;\/?\w+\b[^&gt;]*&gt;)*)((?:(?:[?*+]|\{\d+(?:,\d*)?
+(\[\^?)(\]?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*(?:\[(?::\^?\w+:\])?[^[\]\\]*
+(?:\\[\S\s][^[\]\\]*)*)*)\]((?:&lt;\/?\w+\b[^&gt;]*&gt;)*)((?:(?:[?*+]|\{\d+(?:,\d*)?
 \})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|(&lt;\/?\w+\b[^&gt;]*&gt;)|(#.*)/g;</pre>
 
 <p>Following, are the remaining regular expressions from the script in both commented and non-commented formats. Happy regexing!</p>
 
-<pre class="regex_x"># re_1_nocmt: Match character classes, comments groups and HTML tags (no comments).
+<pre class="regex_x"># re_1_nocmt: Match character classes, comment groups and HTML tags (no comments).
   ( [^[(&lt;\\]+(?:\\[\S\s][^[(&lt;\\]*)*       # $1: Everything else (starting w/non-escape)
   |          (?:\\[\S\s][^[(&lt;\\]*)+       #  or everything else (starting w/escape).
   )                                       # End $1.
 | (\[\^?)                                 # $2: Character class opening delim.
   (                                       # $3: Character class contents.
     \]?                                   # Unescaped ] allowed if first char.
-    [^\][\\]*(?:\\[\S\s][^\][\\]*)*       # Non-[], escaped-anything (normal*).
+    [^[\]\\]*(?:\\[\S\s][^[\]\\]*)*       # Non-[], escaped-anything (normal*).
     (?: \[                                # Allow a non-escaped "[", and it
       (?::\^?\w+:\])?                     # may be embedded POSIX char class.
-      [^\][\\]*(?:\\[\S\s][^\][\\]*)*     # More non-[], escaped-anything.
+      [^[\]\\]*(?:\\[\S\s][^[\]\\]*)*     # More non-[], escaped-anything.
     )*                                    # Unroll-the-loop (special normal*)*
   )                                       # End $3. Character class contents.
   \]                                      # Character class closing delimiter.
@@ -95,8 +95,8 @@ Copy both to this file's folder then uncomment the following three tag elements.
 </pre>
 
 <pre class="regex">var re_1_nocmt = /([^[(&lt;\\]+(?:\\[\S\s][^[(&lt;\\]*)*|(?:\\[\S\s][^[(&lt;\\]*)+)|
-(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*
-(?:\\[\S\s][^\][\\]*)*)*)\]((?:&lt;\/?\w+\b[^&gt;]*&gt;)*)((?:(?:[?*+]|\{\d+(?:,\d*)?
+(\[\^?)(\]?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*(?:\[(?::\^?\w+:\])?[^[\]\\]*
+(?:\\[\S\s][^[\]\\]*)*)*)\]((?:&lt;\/?\w+\b[^&gt;]*&gt;)*)((?:(?:[?*+]|\{\d+(?:,\d*)?
 \})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|(&lt;\/?\w+\b[^&gt;]*&gt;)/g;</pre>
 
 <pre class="regex_x"># re_2: Match inner (non-nested) PCRE syntax regex groups.
@@ -136,7 +136,7 @@ Copy both to this file's folder then uncomment the following three tag elements.
 )?                         # End $1: Optional group type specification.
 ([^()]*)                   # $2: Inner group contents.
 \)                         # Regex group closing ")" delimiter.
-((?:&lt;/?\w+\b[^&gt;]*&gt;)*)                   # $3 Optional HTML open/close tags.
+((?:&lt;/?\w+\b[^&gt;]*&gt;)*)                   # $3 HTML between ")" and quantifier.
 ((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)  # $4: Optional quantifier.
 # Note 1: Handle "&lt;", "&gt;" and "&amp;", even if not converted to HTML entities.
 </pre>
@@ -150,12 +150,10 @@ Copy both to this file's folder then uncomment the following three tag elements.
   ( [^\\]+(?:\\[^()|][^\\]*)*  # $1: Everything else (starting with non-escape),
   |       (?:\\[^()|][^\\]*)+  #  or everything else (starting with escape).
   )                            # End $1.
-| (\\\()                       # or $2: "\(" Escaped left parentheses.
-| (\\\))                       # or $3: "\)" Escaped right parentheses.
-| (\\\|)                       # or $4: "\|" Escaped OR pipe char.
+| (\\[()|])                    # $2: Escaped "(", ")" or "|".
 </pre>
 
-<pre class="regex">/([^\\]+(?:\\[^()|][^\\]*)*|(?:\\[^()|][^\\]*)+)|(\\\()|(\\\))|(\\\|)/g;</pre>
+<pre class="regex">/([^\\]+(?:\\[^()|][^\\]*)*|(?:\\[^()|][^\\]*)+)|(\\[()|])/g</pre>
 
 <pre class="regex_x"># Example pseudo-regex demonstrating all recognized PCRE component types.
 
@@ -260,11 +258,11 @@ Copy both to this file's folder then uncomment the following three tag elements.
 
 (?# MISCELLANEOUS TESTS)
 # test HTML tags having "(", ")" and "|" group delimiter chars in attribute values.
-<b title="Title attribute (with | group | delims) in open regex)">HTML TAG</b>            # in open regex
-(?# <b title="Title attribute (with | group | delims) in (?#comment group)">HTML TAG</b>)       # in comment group
-# <b title="Title attribute (with | group | delims) in # comment">HTML TAG</b>          # in comment
-[<b title="Title attribute (with | group | delims) in [character class]">HTML TAG</b> in character class]
-(<b title="Title attribute (with | group | delims) in (group)">HTML TAG</b> in group)
+<b title="Title attribute (with | [regex] | delims) in open regex)">HTML TAG</b>            # in open regex
+(?# <b title="Title attribute (with | [regex] | delims) in (?#comment group)">HTML TAG</b>)       # in comment group
+# <b title="Title attribute (with | [regex] | delims) in # comment">HTML TAG</b>          # in comment
+[<b title="Title attribute (with | [regex] | delims) in [character class]">HTML TAG</b> in character class]
+(<b title="Title attribute (with | [regex] | delims) in (group)">HTML TAG</b> in group)
 
 # character class regexes with HTML tags
 <b>[</b>charclass] <b>[char</b>class] <b>[charclass</b>] <b>[charclass]</b>

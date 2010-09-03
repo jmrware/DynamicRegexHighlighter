@@ -1,6 +1,6 @@
 /* <![CDATA[ */
 /* File:		DynamicRegexHighlighter.js
- * Version:		20100902_1400
+ * Version:		20100902_2100
  * Copyright:	(c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License:	http://www.opensource.org/licenses/mit-license.php
  *
@@ -31,32 +31,32 @@ reHighlightElement = function (elem) {
 	var sibs;				// Array of sibling span nodes.
 	var str;				// Temp string.
 	var el;					// Temp node element.
-	var i;					// Loop index.
+	var i, j;				// Loop indexes.
 // Phase 1: - Mark character classes, comments and comment groups
 //	 and hide their parentheses and pipe symbols as HTML entities.
-	var re_1_cmt = /([^[(#<\\]+(?:\\[\S\s][^[(#<\\]*)*|(?:\\[\S\s][^[(<#\\]*)+)|(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:<\/?\w+\b[^>]*>)*)((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|(<\/?\w+\b[^>]*>)|(#.*)/g;
-	var re_1_nocmt = /([^[(<\\]+(?:\\[\S\s][^[(<\\]*)*|(?:\\[\S\s][^[(<\\]*)+)|(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*(?:\\[\S\s][^\][\\]*)*)*)\]((?:<\/?\w+\b[^>]*>)*)((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|(<\/?\w+\b[^>]*>)/g;
+	var re_1_cmt = /([^[(#<\\]+(?:\\[\S\s][^[(#<\\]*)*|(?:\\[\S\s][^[(<#\\]*)+)|(\[\^?)(\]?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*(?:\[(?::\^?\w+:\])?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*)*)\]((?:<\/?\w+\b[^>]*>)*)((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|(<\/?\w+\b[^>]*>)|(#.*)/g;
+	var re_1_nocmt = /([^[(<\\]+(?:\\[\S\s][^[(<\\]*)*|(?:\\[\S\s][^[(<\\]*)+)|(\[\^?)(\]?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*(?:\[(?::\^?\w+:\])?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*)*)\]((?:<\/?\w+\b[^>]*>)*)((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|(<\/?\w+\b[^>]*>)/g;
 	var callback1 = function(m0, m1, m2, m3, m4, m5, m6, m7, m8, m9) {
-		if (m1) { // Group 1: Everything other than char classes, comments and comment groups.
-			return m1.replace(/([^\\]+(?:\\[^()|][^\\]*)*|(?:\\[^()|][^\\]*)+)|(\\\()|(\\\))|(\\\|)/g,
+		if (m1) { // Group 1: Not char class, comment group, comment or HTML tag(s).
+			// Hide any/all escaped "()|" delimiters - convert to HTML entities.
+			return m1.replace(/([^\\]+(?:\\[^()|][^\\]*)*|(?:\\[^()|][^\\]*)+)|(\\[()|])/g,
 				function (m0, m1, m2, m3, m4) {
 					if (m1) return m1;
-					if (m2) return '\\&#40;';
-					if (m3) return '\\&#41;';
-					if (m4) return '\\&#124;';
+					return {'\\(': '\\&#40;', '\\)': '\\&#41;', '\\|': '\\&#124;'}[m2];
 				} );
 		}
 		if (m2) { // Groups 2,3,4,5: [character class], contents, HTML tags and quantifier.
 			++cc_cnt;
 			m3 = reHideDelims(m3);
-
 			if (m4) m4 = reHideDelims(m4);
+			// Let m1 = common return prefix string.
+			m1 = '<span title="c' + cc_cnt + '">' + m2 + '<\/span>' + m3 + '<span title="c' + cc_cnt + '">]';
 			if (m4 && m5) { // If there is an HTML tag between "]" and quantifier, wrap each separately.
-				return '<span title="c' + cc_cnt + '">' + m2 + '<\/span>' + m3 + '<span title="c' + cc_cnt + '">]<\/span>' + m4 + '<span title="c' + cc_cnt + '">' + m5 + '<\/span>';
+				return m1 + '<\/span>' + m4 + '<span title="c' + cc_cnt + '">' + m5 + '<\/span>';
 			} else if (m4) { // There is an HTML tag but no quantifier. Append it to the end.
-				return '<span title="c' + cc_cnt + '">' + m2 + '<\/span>' + m3 + '<span title="c' + cc_cnt + '">]<\/span>' + m4;
+				return m1 + '<\/span>' + m4;
 			} else { // No HTML tag. Wrap end "]" together with any quantifier.
-				return '<span title="c' + cc_cnt + '">' + m2 + '<\/span>' + m3 + '<span title="c' + cc_cnt + '">]' + m5 + '<\/span>';
+				return m1 + m5 + '<\/span>';
 			}
 
 		}
@@ -95,22 +95,24 @@ reHighlightElement = function (elem) {
 			gtype = "p" + capgrp_cnt;
 			m1 = "";
 		}
-		str = '<span title="' + gtype + '">&#124;<\/span>';
-		m2 = m2.replace(/\|/g, str); // Mark & hide ORs (between | parentheses).
+		// Markup/hide all ORs (?:between | parentheses).
+		m2 = m2.replace(/\|/g, '<span title="' + gtype + '">&#124;<\/span>');
 		if (m3) m3 = reHideDelims(m3);
+		// Let m1 = common return prefix string.
+		m1 = '<span title="' + gtype + '">&#40;' + m1 + '<\/span>' + m2 + '<span title="' + gtype + '">&#41;';
 		if (m3 && m4) { // HTML tag between ")" and quantifier. Wrap each separately.
-			return '<span title="' + gtype + '">&#40;' + m1 + '<\/span>' + m2 + '<span title="' + gtype + '">&#41;<\/span>' + m3 + '<span title="' + gtype + '">' + m4 + '<\/span>';
+			return m1 + '<\/span>' + m3 + '<span title="' + gtype + '">' + m4 + '<\/span>';
 		} else if (m3) { // HTML tag but no quantifier. Append it to the end.
-			return '<span title="' + gtype + '">&#40;' + m1 + '<\/span>' + m2 + '<span title="' + gtype + '">&#41;<\/span>' + m3;
+			return m1 + '<\/span>' + m3;
 		} else { // No HTML tag. Wrap end ")" together with any quantifier.
-			return '<span title="' + gtype + '">&#40;' + m1 + '<\/span>' + m2 + '<span title="' + gtype + '">&#41;' + m4 + '<\/span>';
+			return m1 + m4 + '<\/span>';
 		}
 	};
 // Process DOM element having class: "regex" or "regex_x".
 	var text = elem.innerHTML;
 	if (text.length === 0) return;
-	// Hide all group delimiters within any HTML opening tag attribute values.
-	text = text.replace(/<\w+\b[^>]*>/g, function (m0) {return reHideDelims(m0);});
+	// Hide all regex delimiters within any HTML opening tag attribute values.
+	text = text.replace(/<\w+\b[^>]+>/g, reHideDelims);
 	if (/\bregex_x\b/.test(elem.className)) {	// Phase 1.
 		text = text.replace(re_1_cmt, callback1);
 	} else {
@@ -122,7 +124,7 @@ reHighlightElement = function (elem) {
 	// Markup global/outermost | OR alternatives.
 	text = text.replace(/\|/g, '<span title="o">&#124;<\/span>');
 	// Any parentheses left at this point represent errors.
-	text = text.replace(/([()])/g, '<span class="regex_err" title="e">$1<\/span>');
+	text = text.replace(/[()]/g, '<span class="regex_err" title="e">$&<\/span>');
 	// Reflow the document with the new markup.
 	elem = rePutElemContents(elem, text); // With PRE's, this is a bit tricky.
 // Phase 3: Add mouse event highlighting handlers.
@@ -132,10 +134,10 @@ reHighlightElement = function (elem) {
 	var span_cnt = spans.length;
 	for (i = 0; i < span_cnt; i++) {
 		span = spans[i];
-		if (!span.sibs) {
+		if (!span.sibs && (/^[cnmbgpoe]\d*$/.test(span.title))) {
 			sibs = []; // Gather array of all sibling spans.
 			title = span.title;
-			for (var j = 0; j < span_cnt; j++) {
+			for (j = 0; j < span_cnt; j++) {
 				el = spans[j];
 				if (!el.sibs && el.title == title) {
 					sibs.push(el);
@@ -201,16 +203,14 @@ rePutElemContents = function (elem, text) {
 };
 function reHideDelims(text) {
 	return text.replace(/[()|[\]]/g,
-		function(m0) {
-			switch (m0) {
-			case "(": return '&#40;';
-			case ")": return '&#41;';
-			case "|": return '&#124;';
-			case "[": return '&#91;';
-			case "]": return '&#93;';
-			default: return '';
-			}
-		} );
+		function (m0) {return {
+			"(": "&#40;",
+			")": "&#41;",
+			"|": "&#124;",
+			"[": "&#91;",
+			"]": "&#93;"
+		}[m0];
+	});
 }
 function reOnMouseover() { // Add "regex_hl" class to all siblings.
 	for (var i = 0; i < this.sibs.length; i++) {
@@ -228,7 +228,7 @@ function reOnMouseout() { // Remove "regex_hl" class from all siblings.
 		}
 	}
 }
-reGetElemsByKlassNames = function(base_el /*, class1, class2, ... */) {
+reGetElemsByKlassNames = function(base_el /*, class1[, class2, ...] */) {
 	var nk = arguments.length - 1; // Count of passed classes.
 	if (nk < 1) return null;
 	var el, kl_els = [];
@@ -255,7 +255,8 @@ function rePrepareAllMarkup() {
 	re_elems = null;
 }
 reHideHtmlSpecialChars = function(text) {
-	return text.replace(/&/g,'&amp;').replace(/[<]/g,'&lt;').replace(/>/g,'&gt;');
+	return text.replace(/[&<>]/g,
+		function (m0) {return {"&": "&amp;", "<": "&lt;", ">": "&gt;"}[m0];});
 };
 function reOnload() {
 	if (!auto_load) return; // No autoload? Exit now.

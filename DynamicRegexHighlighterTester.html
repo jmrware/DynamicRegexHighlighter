@@ -3,9 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Dynamic Regex Highlighting Tester  (Rev:20100902_1400)</title>
+<title>Dynamic Regex Highlighting Tester  (Rev:20100902_2100)</title>
 <meta name="author" content="Jeff Roberson" />
-<meta name="version" content="20100902_1400" />
+<meta name="version" content="20100902_2100" />
 <meta name="licence" content="MIT" />
 <style type="text/css" media="screen">
     body {margin: 2em; color:#333; background:#DDB;}
@@ -69,8 +69,8 @@ function handleOnclick() {  // This takes over the form submit button event.
     <p>Enter a regex. Choose <input title="Incorrect selection may result in wrongly identified errors." id="cb_x" type="checkbox" name="cb_x" /> Perl "x" free spacing mode.
     <span id="regex_form_submit">Click: <input id="submit" type="submit" name="submit" value="submit" onclick="return handleOnclick();"/></span></p>
     <p><textarea id="input" name="input" rows="10" cols="80">var re_1_cmt = /([^[(#&lt;\\]+(?:\\[\S\s][^[(#&lt;\\]*)*|(?:\\[\S\s][^[(&lt;#\\]*)+)|
-(\[\^?)(\]?[^\][\\]*(?:\\[\S\s][^\][\\]*)*(?:\[(?::\^?\w+:\])?[^\][\\]*
-(?:\\[\S\s][^\][\\]*)*)*)\]((?:&lt;\/?\w+\b[^&gt;]*&gt;)*)((?:(?:[?*+]|\{\d+(?:,\d*)?
+(\[\^?)(\]?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*(?:\[(?::\^?\w+:\])?[^[\]\\]*
+(?:\\[\S\s][^[\]\\]*)*)*)\]((?:&lt;\/?\w+\b[^&gt;]*&gt;)*)((?:(?:[?*+]|\{\d+(?:,\d*)?
 \})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|(&lt;\/?\w+\b[^&gt;]*&gt;)|(#.*)/g;</textarea></p>
     <pre class="regex" id="output">Dynamically highlightable regex appears here</pre>
 </form>
