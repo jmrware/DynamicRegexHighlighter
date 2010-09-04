@@ -1,5 +1,5 @@
 /* File:        README for DynamicRegexHighlighter.js
- * Version:     20100903_1300
+ * Version:     20100904_1700
  * Copyright:   (c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License: see: http://www.opensource.org/licenses/mit-license.php
  */
@@ -34,6 +34,13 @@ It can optionally work with the jsresyntaxhighlighter.js colorizer script.
 This webpage provides an interactive interface allowing the user to enter
 any regular expression and then dynamically inspect its various components.
 It can optionally work with the jsresyntaxhighlighter.js colorizer script.
+
+----------------------------
+ DynamicRegexHighlighter.rbl
+----------------------------
+This is a RegexBuddy library file containing all of the non-trivial
+regular expressions used by the script. This tool was used extensively
+during development. Highly recommended. See: http://www.regexbuddy.com/.
 
 -----------------------
  ColorizeRegexSyntax.js
