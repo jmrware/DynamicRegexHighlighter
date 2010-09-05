@@ -1,11 +1,12 @@
 /* <![CDATA[ */
 /* File:		DynamicRegexHighlighter.js
- * Version:		20100904_1700
+ * Version:		20100904_2200
  * Copyright:	(c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License:	http://www.opensource.org/licenses/mit-license.php
  *
  * Summary: This script provides web page dynamic highlighting of regular
- * expressions enclosed within HTML elements marked up with class="regex".
+ * expressions enclosed within HTML elements marked up with class="regex"
+ * or class="regex_x". ("regex_x is for "x" free spacing mode regexes).
  *
  * Usage:	See example page: DynamicRegexHighlighter.html
  */
@@ -28,7 +29,7 @@ reHighlightElement = function(elem) {
 	var grp_cnt = 0;		// (?: PCRE groups).
 	var brgrp_cnt = 0;		// (?|(branch)|(reset)) groups.
 	var capgrp_cnt = 0;		// (capture groups).
-	var text;				// Element oontents string.
+	var text;				// Element contents string.
 	var spans;				// Node list of span elements.
 	var span_cnt;			// Count of spans in regex element.
 	var span;				// Current DOM span node.
@@ -42,7 +43,7 @@ reHighlightElement = function(elem) {
 	var re_1_cmt = /([^[(#<\\]+(?:\\[^<][^[(#<\\]*)*|(?:\\[^<][^[(#<\\]*)+)|(\[\^?)(\]?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*(?:\[(?::\^?\w+:\])?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*)*)\]((?:<\/?\w+\b[^>]*>)*)((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|((?:<\/?\w+\b[^>]*>)+)|(#.*)/g;
 	var re_1_nocmt = /([^[(\\]+(?:\\[\S\s][^[(\\]*)*|(?:\\[\S\s][^[(\\]*)+)|(\[\^?)(\]?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*(?:\[(?::\^?\w+:\])?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*)*)\]((?:<\/?\w+\b[^>]*>)*)((?:(?:[?*+]|\{\d+(?:,\d*)?\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))/g;
 	var callback1 = function(m0, m1, m2, m3, m4, m5, m6, m7, m8, m9) {
-		if (m1) { // Group 1: Not char class, comment group, comment or HTML tag(s).
+		if (m1) { // Group 1: Everything else. (includes HTML tags for nocmt case).
 			// Hide any/all escaped "()|" delimiters - convert to HTML entities.
 			return m1.replace(/([^\\]+(?:\\[^()|][^\\]*)*|(?:\\[^()|][^\\]*)+)|(\\[()|])/g,
 				function(m0, m1, m2) {
@@ -50,11 +51,10 @@ reHighlightElement = function(elem) {
 					return {'\\(': '\\&#40;', '\\)': '\\&#41;', '\\|': '\\&#124;'}[m2];
 				} );
 		}
-		if (m2) { // Groups 2,3,4,5: [character class], contents, HTML tags and quantifier.
+		if (m2) { // Groups 2,3,4,5: [character class] (delim, contents, HTML, quantifier).
 			++cc_cnt;
-			m3 = reHideDelims(m3);
 			// Let m1 = common return prefix string.
-			m1 = '<span title="c' + cc_cnt + '">' + m2 + '<\/span>' + m3 + '<span title="c' + cc_cnt + '">]';
+			m1 = '<span title="c' + cc_cnt + '">' + m2 + '<\/span>' + reHideDelims(m3) + '<span title="c' + cc_cnt + '">]';
 			if (m4 && m5) { // If there is an HTML tag between "]" and quantifier, wrap each separately.
 				return m1 + '<\/span>' + m4 + '<span title="c' + cc_cnt + '">' + m5 + '<\/span>';
 			} else if (m4) { // There is an HTML tag but no quantifier. Append it to the end.
@@ -108,13 +108,14 @@ reHighlightElement = function(elem) {
 // Process DOM element having class: "regex" or "regex_x".
 	text = elem.innerHTML;
 	if (text.length === 0) return elem;
-	// Hide any/all "&<>()|[]" within HTML opening tag attribute values.
+	// Hide any/all "<>()|[]" troublemakers from within HTML opening tags.
 	text = text.replace(/<(\w+\b(?:\s+[\w\-.:]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[\w\-.:]+))?)+\s*\/?)>/g,
 		function(m0, m1) {
-			m1 = m1.replace(/[<>]/g, // First hide "<>".
-				function(m0) {return {"<": "&lt;", ">": "&gt;"}[m0];});
-			return "<" + reHideDelims(m1) + ">"; // Next hide "()|[]".
-		});
+			return "<" +  m1.replace(/[<>()|[\]]/g,
+				function(m0) {return {"<": "&lt;", ">": "&gt;", "(": "&#40;",
+					")": "&#41;", "|": "&#124;", "[": "&#91;", "]": "&#93;" }[m0];
+				} ) + ">";
+		} ); // I am beginning to really appreciate the power of Javascript!
 	if (/\bregex_x\b/.test(elem.className)) {	// Phase 1.
 		text = text.replace(re_1_cmt, callback1);
 	} else {
@@ -177,8 +178,8 @@ rePutElemContents = function(elem, text) {
 	if (navigator.userAgent.indexOf('MSIE') != -1) { // IE.
 		// IE does not respect PRE's whitespace when writing innerHTML.
 		// We use outerHTML instead, which replaces the old node with
-		// a new one (old one goes to DOM limbo). We find the new one
-		// by using a non-empty node ID attribute.
+		// a new one (the old one goes to DOM limbo). We find the new
+		// one by using a non-empty node ID attribute.
 		if (elem.nodeName == 'PRE') {
 			var m = elem.outerHTML.match(/^(<PRE[^>]*)>/i);
 			var id = elem.id;		// ID value to be restored.
@@ -261,14 +262,8 @@ reAddUnloadEvent = function(newf) {
 };
 // Local support functions:
 function reHideDelims(text) {
-	return text.replace(/[()|[\]]/g,
-		function(m0) {return {
-			"(": "&#40;",
-			")": "&#41;",
-			"|": "&#124;",
-			"[": "&#91;",
-			"]": "&#93;" }[m0];
-		});
+	return text.replace(/[()|]/g,
+		function(m0) {return {"(": "&#40;", ")": "&#41;", "|": "&#124;"}[m0];});
 }
 function reOnMouseover() { // Add "regex_hl" class to all siblings.
 	for (var i = 0; i < this.sibs.length; i++) {
