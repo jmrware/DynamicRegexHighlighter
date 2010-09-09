@@ -1,6 +1,6 @@
 /* <![CDATA[ */
 /* File:        DynamicRegexHighlighter.js
- * Version:     20100907_0900
+ * Version:     20100908_1800
  * Copyright:   (c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License: http://www.opensource.org/licenses/mit-license.php
  *
