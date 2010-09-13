@@ -1,6 +1,6 @@
 /* <![CDATA[ */
 /* File:        ColorizeRegexSyntax.js
- * Version:     20100910_0800
+ * Version:     20100913_0900
  * Copyright:   (c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License: http://www.opensource.org/licenses/mit-license.php
  *
