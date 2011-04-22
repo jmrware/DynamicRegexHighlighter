@@ -1,6 +1,6 @@
 /* <![CDATA[ */
 /* File:        DynamicRegexHighlighter.js
- * Version:     20100921_2200
+ * Version:     20110421_2300
  * Copyright:   (c) 2010 Jeff Roberson - http://jmrware.com
  * MIT License: http://www.opensource.org/licenses/mit-license.php
  *
@@ -198,6 +198,18 @@ window.reHighlightElement = function(elem) {
     return elem;
 };
 window.rePutElemContents = function(elem, text) {
+	var events = { // Preserve any/all element event handlers.
+		'onclick': elem.onclick,
+		'ondblclick': elem.ondblclick,
+		'onmousedown': elem.onmousedown,
+		'onmouseup': elem.onmouseup,
+		'onmouseover': elem.onmouseover,
+		'onmousemove': elem.onmousemove,
+		'onmouseout': elem.onmouseout,
+		'onkeypress': elem.onkeypress,
+		'onkeydown': elem.onkeydown,
+		'onkeyup': elem.onkeyup
+	};
     if (navigator.userAgent.indexOf('MSIE') != -1) { // IE.
         // IE does not respect PRE's whitespace when writing innerHTML.
         // We use outerHTML instead, which replaces the old node with
@@ -226,6 +238,17 @@ window.rePutElemContents = function(elem, text) {
         elem = el_new;
         el_new = null;
     }
+    // Restore saved event handlers.
+	elem.onclick     = events['onclick'];
+	elem.ondblclick  = events['ondblclick'];
+	elem.onmousedown = events['onmousedown'];
+	elem.onmouseup   = events['onmouseup'];
+	elem.onmouseover = events['onmouseover'];
+	elem.onmousemove = events['onmousemove'];
+	elem.onmouseout  = events['onmouseout'];
+	elem.onkeypress  = events['onkeypress'];
+	elem.onkeydown   = events['onkeydown'];
+	elem.onkeyup     = events['onkeyup'];
     return elem;
 };
 window.reGetElemsByKlassNames = function(base_el /*, class1[, class2[, class3...]] */) {
@@ -342,14 +365,14 @@ function reOnunload() {
         }
     }
     // Null out pseudo-static private closure variables.
-    re_elems = re_class = re_1_cmt = re_1_nocmt = re_2 = null;
-    re_escapedgroupdelims = re_open_html_tag = re_over = re_out = null;
+//    re_elems = re_class = re_1_cmt = re_1_nocmt = re_2 = null;
+//    re_escapedgroupdelims = re_open_html_tag = re_over = re_out = null;
 
     // Null out globals.
-    window.reAutoLoad = window.reHighlightElement = window.rePutElemContents = null;
-    window.reGetElemsByKlassNames = window.reHideHtmlSpecialChars = null;
-    window.reAddLoadEventFirst = window.reAddLoadEvent = null;
-    window.reAddUnloadEvent = window.reAutoLoad = null;
+//    window.reAutoLoad = window.reHighlightElement = window.rePutElemContents = null;
+//    window.reGetElemsByKlassNames = window.reHideHtmlSpecialChars = null;
+//    window.reAddLoadEventFirst = window.reAddLoadEvent = null;
+//    window.reAddUnloadEvent = window.reAutoLoad = null;
 }
 // Load/unload only if we have needed DOM methods.
 if (document.getElementById && document.getElementsByTagName) {
