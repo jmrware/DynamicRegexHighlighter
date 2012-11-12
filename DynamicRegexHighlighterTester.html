@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Dynamic Regex Highlighting Tester (Rev:20100921_2200)</title>
+<meta name="author" content="Jeff Roberson" />
+<meta name="version" content="20100921_2200" />
+<meta name="License" content="MIT: http://www.opensource.org/licenses/mit-license.php" />
+<style type="text/css" media="screen">
+    body {margin: 2em; color:#333; background:#DDB;}
+    div {margin: 0; padding: 0em 1.5em 1em; border: 2px solid #555; background:#EEC;}
+    pre {margin: 1em 0; padding: 1em; border: 2px solid #555; font-size: 1.2em; overflow: auto;}
+    h1 {font-family: monospace; text-align: center;}
+    .regex_err {color: #FFF; background-color: #F00;}
+    .regex_hl {color: #FFF; background-color: #060;}
+    textarea {width: 99%;}
+</style>
+<script type="text/javascript" src="DynamicRegexHighlighter.js"></script>
+<!-- To add regex syntax colorizing to this page, get jsresyntaxhighlighter.js and
+jsresyntaxhighlighter.css from: http://stevenlevithan.com/regex/syntaxhighlighter/.
+Both: (copyright) 2010 Steven Levithan <http://stevenlevithan.com>, MIT License.
+Copy both to this file's folder then uncomment the following three lines. -->
+<!--
+<link rel="stylesheet" type="text/css" href="jsresyntaxhighlighter.css" />
+<script type="text/javascript" src="jsresyntaxhighlighter.js"></script>
+<script type="text/javascript" src="ColorizeRegexSyntax.js"></script>
+ -->
+<script type="text/javascript">
+/* <![CDATA[ */
+/* Read textarea input, write to output elem and prepare regex highlighting */
+function handleOnclick() {  // This takes over the form submit button event.
+    var input, output, x_flag, text, c_flag;    // Our local variables.
+    if (!window.reHighlightElement ||   // This requires DynamicRegexHighlighter.js.
+        !document.getElementById) return false; // and non-brain-dead browser.
+    input  = document.getElementById('input');  // Input textarea form element.
+    output = document.getElementById('output'); // Output PRE element.
+    x_flag = document.getElementById('cb_x');   // "x" flag form checkbox.
+    if (!input || !x_flag || !output) return false; // Not prepared? Exit.
+    if (x_flag.checked) {                       // Need to display commented
+        output.className="regex_x";             // regexes with whitespace as-is
+        output.style.whiteSpace = 'pre';        // with linebreaks as user says.
+    } else {                                    // But non-x-flag, non-commented
+        output.className="regex";               // regexes need auto-wrap on to
+        output.style.whiteSpace = 'normal';     // wrap if very long and one word.
+    }                                           // (e.g. long Javascript regexes)
+    text = input.value;                         // What the user typed in; a regex!
+    text = reHideHtmlSpecialChars(text);        // Convert &<> to html entities.
+    // If ColorizeRegexSyntax.js loaded ok, we should have a "colorize" checkbox.
+    c_flag = document.getElementById('cb_col'); // Optional "colorize" checkbox.
+    if (c_flag && c_flag.checked) {             // If colorizing avail and requested...
+        if (x_flag.checked) {                   // Warn if "x" mode is also on.
+            text = 'Color syntax highlighter not designed to work with "x" free-spacing mode.';
+        } else {                                // Regex syntax colorization is a go.
+            text = highlightJsReSyntax(text);   // See: http://stevenlevithan.com
+        } // Note that this adds a bunch of <b>, <i> and <u> tags to markup, which
+    }     //  are properly handled (ignored) by rePutElemContents().
+    output = rePutElemContents(output, text);   // Place (marked up) regex in container.
+    output = reHighlightElement(output); // Now sit back and let Disco Stu do his thing...
+    input = null; x_flag = null; c_flag = null; output = null; // Clean up node refs.
+    return false;                               // Don't actually submit form.
+}
+/* ]]> */
+</script>
+</head>
+<body><div>
+<h1 class="regex_x">Dynamic (?:Regex Highlighting)++ Tester</h1>
+<p style="text-align: center; font: bold 1.2em monospace;"><a title="Download latest version from Github" href="http://github.com/jmrware/DynamicRegexHighlighter/archives/master">Version 20100921_2200</a></p>
+<p id="headerlinks">Documentation: <a title="The main documantation page" href="DynamicRegexHighlighter.html">DynamicRegexHighlighter.html</a>.</p>
+<form action="" method="get">
+    <p>Enter a regex. Choose <input title="Incorrect selection may result in wrongly identified errors." id="cb_x" name="cb_x" type="checkbox" /> Perl "x" free spacing mode.
+    <span id="regex_form_submit">Click: <input id="submit" type="submit" name="submit" value="submit" onclick="return handleOnclick();"/></span></p>
+    <p><textarea id="input" name="input" rows="10" cols="80">var re_1_cmt = /([^[(#&lt;\\]+(?:\\[^&lt;][^[(#&lt;\\]*)*|(?:\\[^&lt;][^[(#&lt;\\]*)+)|
+(\[\^?)(\]?[^[\]\\]*(?:\\[\S\s][^[\]\\]*)*(?:\[(?::\^?\w+:\])?[^[\]\\]*
+(?:\\[\S\s][^[\]\\]*)*)*)\]((?:&lt;\/?\w+\b[^&gt;]*&gt;)*)((?:(?:[?*+]|\{\d+(?:,\d*)?
+\})[+?]?)?)|(\((?!\?#))|(\(\?#[^)]*\))|((?:&lt;\/?\w+\b[^&gt;]*&gt;)+)|(#.*)/g;</textarea></p>
+    <pre class="regex" id="output">Dynamically highlightable regex appears here</pre>
+</form>
+</div>
+</body>
+</html>
